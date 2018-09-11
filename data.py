@@ -1,6 +1,7 @@
 import transaction
 import datetime
 import setup
+import numpy as np
 
 def get():
     """
@@ -71,19 +72,19 @@ def get():
                 continue
             
             for xl in range(5):
-                data[xl].append(processedLine[xl])              
+                data[xl].append(processedLine[xl])
 
     print(badLines,'bad lines found and ignored.')
     print('Sorting',len(data[0]),'transaction lines by date...\n')
     
-    for xl in reversed(range(5)):
-        sortedData[xl] = [
-            dataLine for _, dataLine
-            in sorted(zip(data[0],data[xl]))
-        ]
-        
+    dateArray = np.array(data[0])
+    sortOrder = dateArray.argsort()
+    for xl in range(len(data)):
+        dataArray = np.array(data[xl])
+        sortedData[xl] = dataArray[sortOrder].tolist()
+    
     # Convert datetime object into dd-mm-yyyy format
-    newDateFormat = [line.strftime("%d-%m-%Y") for line in sortedData[0]]
+    newDateFormat = [date.strftime("%d-%m-%Y") for date in sortedData[0]]
     sortedData[0] = newDateFormat
     return sortedData
 
@@ -106,7 +107,7 @@ def writeCSV(columns=[]):
     outputFile = open(outputFilePath,"w")
         
     # Write column names
-    columnNames =  ['Date', 'Amount', 'Type', 'Desc']
+    columnNames =  ['Date', 'Amount', 'Type', 'Desc', 'Original transaction']
     outputFile.write(','.join(columnNames))
     outputFile.write('\n') 
 

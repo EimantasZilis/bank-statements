@@ -8,5 +8,6 @@ each transaction.
 It will read and write data to directories specified in setup module.
 """
 
-statementData = data.get()        # Get data from statements
-data.writeCSV(statementData)      # Write data to CSV
+# Read data from statements and write to CSV
+statementData = data.get()       
+data.writeCSV(statementData)

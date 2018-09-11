@@ -17,20 +17,3 @@ def outputPath():
 
 def debugMode():
     return debug
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-

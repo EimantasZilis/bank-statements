@@ -220,7 +220,8 @@ def process(line,year):
         transAmount = float(transAmount)
     except:
         error += 'Amount is not a number'
-                                          
+
+    transType = '|'.join(transType)
     newLine = [
         transDate,
         transAmount,
