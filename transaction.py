@@ -1,133 +1,8 @@
 import re
 import datetime
 import calendar
+import setup
 
-# Define mapping between month names and their numbers
-monthDict = {
-    monthName.upper(): monthNumber
-    for monthNumber, monthName in enumerate(calendar.month_abbr)
-}
-
-# Define type for a given keyword in transaction description
-typesDict = {
-    'Eating out': [
-        'KFC',
-        'MCDONALD',
-        'COOPERS',
-        'SUSHI',
-        'CROSSE',
-        'SUBWAY',
-        'WASABI',
-        'BELL INN',
-        'TORTILLA',
-        'NANDOS',
-        'KOKORO',
-        'AMERICAN DINER',
-        'LAS IGUANAS',
-        'TOP 1 FOREVER RESTAURA',
-        'ITSU',
-        'FRANKIE & BENNYS',
-        'CHINOS',
-        'JUST-EAT'
-        ],
-        
-    'Groceries': [
-        'SAINSBURYS',
-        'TESCO',
-        'LIDL',
-        'MORRISON',
-        'ASDA',
-        'BOOTS',
-        'WAITROSE',
-        'FIVE STARS',
-        'HATFIELD',
-        'SUPERDRUG',
-        'RAY\'S CHEMIST',
-        'M&S',
-        'CARD FACTORY',
-        'THE WORKS',
-        'WH SMITH',
-        'ST JOHN RETAIL'
-        ],
-        
-    'Travel': [
-        'RAIL',
-        'TRAIN',
-        'TICKET',
-        'TFL',
-        'TSGN',
-        'EAST MIDLANDS TRAI'
-        ],
-        
-    'Holidays': [
-        'RYANAIR',
-        'NATIONAL EXPRESS',
-        'WDFE STANSTED'
-        ],
-
-    'Clothes': [
-        'SPORTSDIRECT',
-        'FRASER',
-        'JOHN LEWIS',
-        'PRIMARK',
-        'DEBENHAMS',
-        'NEXT',
-        'MARKS&SPENCER',
-        'MOSS BROS'
-        ],
-        
-    'Entertainment': [
-        'NERO',
-        'ODEON',
-        'STARBUCKS',
-        'MARTINI',
-        'LETTUCE',
-        'BAR',
-        'TEXAN',
-        'CHIQUITO',
-        'WIBBAS DOWN INN',
-        'FIVE GUYS',
-        'BLUEBIRD BOATS',
-        'ALCHEMIST',
-        'GO WILD',
-        'THE WHITE SWAN',
-        'MAGICMADHOUSE',
-        'MUTE SWAN',
-        'PIANO WORKS',
-        'THE BISHOP'
-        ],
-
-    'Home': [
-        'ONEPLUS',
-        'IKEA',
-        'HOMEBASE',
-        'ARGOS',
-        'AMAZON',
-        'ULTIMATESHIELD',
-        ],
-
-    'Gym': [
-        'MYPROTEIN',
-        'NIKE',
-        ],
-        
-    'Other': [
-        'FEE',
-        'GOOGLE',
-        'EURO',
-        'OHLSON',
-        'CREW EXPERIENCE',
-        'UDEMY',
-        'HAMLEY\'S OF LONDON',
-        'WATERSTONES',
-        'POST OFFICE',
-        'DRY CLEANERS',
-        'THEORY TEST'
-        ],
-    'Bad': [
-        'FASTER PAYMENT RECEIVED'       # Paying into credit card
-    ]
-}
 
 def getTypes(txt):
     """
@@ -146,6 +21,7 @@ def getTypes(txt):
         txt = ' '.join(txt)
         
     types = []
+    typesDict = setup.getTransactionTypeDict()
     for transType in typesDict:
         keywords = typesDict[transType]
         for keyword in keywords:
@@ -175,6 +51,7 @@ def parseLine(line, year):
     transaction = line.split(" ")
 
     # Convert date string into datetime object
+    monthDict = setup.getMonthDict()
     year_int = int(year)
     day_int = int(transaction[0])
     month_str = transaction[1].upper()

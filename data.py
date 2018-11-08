@@ -77,15 +77,10 @@ def get():
     print(badLines,'bad lines found and ignored.')
     print('Sorting',len(data[0]),'transaction lines by date...\n')
     
-    dateArray = np.array(data[0])
-    sortOrder = dateArray.argsort()
-    for xl in range(len(data)):
-        dataArray = np.array(data[xl])
-        sortedData[xl] = dataArray[sortOrder].tolist()
-    
-    # Convert datetime object into dd-mm-yyyy format
-    newDateFormat = [date.strftime("%d-%m-%Y") for date in sortedData[0]]
-    sortedData[0] = newDateFormat
+    dataArray = np.array(data)
+    sortOrder = np.array(data[0]).argsort()
+    for xl in range(len(dataArray)):
+        dataArray[xl] = dataArray[xl][sortOrder]
     return sortedData
 
 
@@ -107,7 +102,7 @@ def writeCSV(columns=[]):
     outputFile = open(outputFilePath,"w")
         
     # Write column names
-    columnNames =  ['Date', 'Amount', 'Type', 'Desc', 'Original transaction']
+    columnNames = setup.getColumnNames()
     outputFile.write(','.join(columnNames))
     outputFile.write('\n') 
 

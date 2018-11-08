@@ -1,4 +1,6 @@
 import data
+import plot
+import stats
 
 """
 Run this module to get transcation data from .txt file (data copied
@@ -9,5 +11,7 @@ It will read and write data to directories specified in setup module.
 """
 
 # Read data from statements and write to CSV
-statementData = data.get()       
+statementData = data.get()
 data.writeCSV(statementData)
+df = stats.getDataFrame(statementData)
+plot.all(df)
