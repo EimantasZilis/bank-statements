@@ -5,7 +5,7 @@ Specify parameters for transaction data.
 """
 
 # Specify input/output transaction file directories
-inFilePath = 'C:\\Users\\Eimantas\\Desktop\\transactions.txt'
+inFilePath = 'C:\\Git\\bank-statements\\all_transactions.csv'
 outFilePath = 'C:\\Users\\Eimantas\\Desktop\\transactions.csv'
 outPlotPath = 'C:\\Users\\Eimantas\\Desktop\\graphs\\'
 
@@ -32,7 +32,7 @@ transactionTypesDict = {
     'Eating out': [
         'KFC',
         'MCDONALD',
-        'COOPERS',
+        'THE JOLLY COOPERS DRINKING',
         'SUSHI',
         'CROSSE',
         'SUBWAY',
@@ -42,12 +42,30 @@ transactionTypesDict = {
         'NANDOS',
         'KOKORO',
         'AMERICAN DINER',
+        'FOREVER RESTAURA',
         'LAS IGUANAS',
         'TOP 1 FOREVER RESTAURA',
         'ITSU',
         'FRANKIE & BENNYS',
         'CHINOS',
-        'JUST-EAT'
+        'JUST-EAT',
+        'JUST EAT EXPRESS',
+        'WRAP IT UP CANNON',
+        'PIAZZA FIRENZE HAMPTON'
+        'WINE & DELI CROYDON',
+        'THE JOLLY COOPERS',
+        'PLENTY HAMPTON'
+        'PAPA JOHNS',
+        'THE REAL CHINA HATFIELD',
+        'SUBWAY EATING PLACES',
+        'NANDOS',
+        'KOKORO',
+        'MCDONALDS',
+        'FIVE GUYS',
+        'PAPAJOHNS',
+        'PIAZZA FIRENZE',
+        'PLENTY HAMPTON',
+        'LTR UK LUTON'
         ],
         
     'Groceries': [
@@ -56,17 +74,25 @@ transactionTypesDict = {
         'LIDL',
         'MORRISON',
         'ASDA',
-        'BOOTS',
         'WAITROSE',
         'FIVE STARS',
-        'HATFIELD',
+        'M&S',
+        'THE WORKS',
+        'ST JOHN RETAIL',
+        'WONDERTREE',
+        'HOSTEL WORLD DUBLIN',
+        'CO-OP GROUP'
+        ],
+
+    'Health and beauty': [
+        'BOOTS',
         'SUPERDRUG',
         'RAY\'S CHEMIST',
-        'M&S',
-        'CARD FACTORY',
-        'THE WORKS',
-        'WH SMITH',
-        'ST JOHN RETAIL'
+        'MYPROTEIN',
+        'CREW EXPERIENCE',
+        'CREW EXPERIENCE BEAUTY AND BARBER',
+        'PULSE CARSHALTON MEMBERSHIP CLUBS',
+        'PEARL CHEMIST'
         ],
         
     'Travel': [
@@ -81,7 +107,13 @@ transactionTypesDict = {
     'Holidays': [
         'RYANAIR',
         'NATIONAL EXPRESS',
-        'WDFE STANSTED'
+        'WDFE STANSTED',
+        'USCUSTOMS ESTA',
+        'LOVE HOLIDAYS TRAVEL AGENCIES',
+        'AIRASIA',
+        'NON-STERLING TRANSACTION'
+        'AIR CHINA',
+        'WIZZ AIR'
         ],
 
     'Clothes': [
@@ -92,28 +124,45 @@ transactionTypesDict = {
         'DEBENHAMS',
         'NEXT',
         'MARKS&SPENCER',
-        'MOSS BROS'
+        'MOSS BROS',
+        'NIKE'
         ],
         
     'Entertainment': [
         'NERO',
         'ODEON',
         'STARBUCKS',
+        'WINE & DELI',
         'MARTINI',
+        'MOONSHINE RACEWAY'
         'LETTUCE',
-        'BAR',
         'TEXAN',
+        'ADVENTURE BAR'
         'CHIQUITO',
         'WIBBAS DOWN INN',
-        'FIVE GUYS',
-        'BLUEBIRD BOATS',
+        'BLUEBIRD BOATS',   
         'ALCHEMIST',
         'GO WILD',
         'THE WHITE SWAN',
+        'MOONSHINE RACEWAY'
+        'SLUG AND LETTUCE'
+        'CHIQUITO',
+        'CHIQUITO 2025 O2'
+        'SLUG AND LETTUCE LONDON'
+        'ADVENTURE BAR LONDON',
         'MAGICMADHOUSE',
         'MUTE SWAN',
         'PIANO WORKS',
-        'THE BISHOP'
+        'THE BISHOP',
+        'SUBURBAN BAR EATING PLACES',
+        'CHRISTOPHERS EATING PLACES',
+        'THE FOUR THIEVES',
+        'HAWKER HOUSE LONDON',
+        'ALL BAR ONE',
+        'SMITHFIELD',
+        'BARRIO CENTRAL LONDON',
+        'DIRTY MARTINI',
+        'SUBURBAN BAR'
         ],
 
     'Home': [
@@ -123,11 +172,11 @@ transactionTypesDict = {
         'ARGOS',
         'AMAZON',
         'ULTIMATESHIELD',
-        ],
-
-    'Gym': [
-        'MYPROTEIN',
-        'NIKE',
+        'WILKO HOUSEHOLD',
+        'AMZN Mktp UK BOOK STORES',
+        'CARD FACTORY',
+        'WH SMITH',
+        'QUEENS ROAD LONDON'
         ],
         
     'Other': [
@@ -135,13 +184,16 @@ transactionTypesDict = {
         'GOOGLE',
         'EURO',
         'OHLSON',
-        'CREW EXPERIENCE',
         'UDEMY',
         'HAMLEY\'S OF LONDON',
         'WATERSTONES',
         'POST OFFICE',
         'DRY CLEANERS',
-        'THEORY TEST'
+        'THEORY TEST',
+        'NON-STERLING TRANSACTION',
+        'VODAFONE LIMITED',
+        'DVLA DRIVER',
+        'HAMPTON & RICHMOND HAMPTON'
         ],
     'Bad': [
         'FASTER PAYMENT RECEIVED'       # Paying into credit card

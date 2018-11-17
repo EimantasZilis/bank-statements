@@ -3,43 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
 
-def getDataFrame(statementData=[]):
-    """
-    Creates data frame based on statementData.
-    Input:
-        statementData      list containing statement data
-    Output:
-        df                 Data frame with
-                           index: datetime
-                           columns: amount, types, descs, year-month, year
-    """
-    colNames = setup.getColumnNames()
-    colDates = colNames[0]
-    colAmount = colNames[1]
-    colTypes = colNames[2]
-    colDescs = colNames[3]
-
-    # Drop the last original tranaction column
-    useCols = len(colNames) - 1
-    
-    df = pd.DataFrame(
-        np.array(statementData[1:useCols]).T,
-        columns=colNames[1:useCols],
-        index=statementData[0]
-    )
-
-    # Apply dtype conversion to dates and amounts
-    df.index = pd.to_datetime(df.index)
-    df[colAmount] = df[colAmount].astype(float)
-    df.index.name = colDates
-
-    # Get spending info
-    df['Week'] = df.index.map(lambda dt: dt.isocalendar()[1])
-    df['YearMonth'] = df.index.map(lambda dt: dt.replace(day=1))
-    df['Year'] = df.index.map(lambda dt: dt.replace(month=1,day=1))
-    return df
-
-
 def pivotTable(dataFrame, timeframe, values):
             
         """
