@@ -1,7 +1,5 @@
-import data
 import plot
-import stats
-    
-df = data.initialise()
-data.write_csv(df)
+import statements
+
+df = statements.import_data()
 plot.all(df)

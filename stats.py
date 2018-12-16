@@ -1,13 +1,12 @@
-import setup
 import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
 
 def pivotTable(dataFrame, timeframe, values):
-            
+
         """
         Create a pivot table out of dataFrame
-    
+
         Input:
             values         String specifying values for pivot table
         Output:
@@ -16,15 +15,11 @@ def pivotTable(dataFrame, timeframe, values):
                              - columns: Timeframe ('Years' or 'YearMonth')
                              - values: Amount
         """
-        pTableValues = values
-        pTableColumns = timeframe
-        pTableIndex = setup.getColumnNames()[2]   # transaction types
         dfCols = dataFrame.columns.tolist()
-        
         ptable = dataFrame.pivot_table(
-            index = [pTableIndex],
-            columns = [pTableColumns],
-            values = [pTableValues],
+            index = ['Type'],
+            columns = [timeframe],
+            values = [values],
             aggfunc=np.sum
         )
 
@@ -86,8 +81,8 @@ def add_dateid(dataframe, expense_category=None):
     Output:
 
     """
-    min_date = dataframe.index.min()  
-    dataframe['date_id'] = dataframe.index.map(lambda dt: (dt - min_date).days)
+    min_date = dataframe.Date.min()
+    dataframe['date_id'] = dataframe.Date.map(lambda dt: (dt - min_date).days)
 
     if expense_category:
         dataframe = dataframe[dataframe['Type']==expense_category]

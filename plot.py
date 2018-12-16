@@ -1,7 +1,7 @@
 import stats
-import setup
+import user_io
 import matplotlib.pylab as plt
-import pandas as pd                
+import pandas as pd
 
 def all(dataframe):
     """
@@ -9,7 +9,7 @@ def all(dataframe):
     It creates a plot for annual expenses and one for each
     expense category, capturing monthly changes.
 
-    It saves plots to a directory specified in setup module. 
+    It saves plots to a directory specified in setup module.
 
     Input:
         dataframe         Input data
@@ -45,39 +45,39 @@ def monthly(main_dataframe, timeframe, datatype):
     monthly_totals = tidy(
         stats.totals(main_dataframe, timeframe, datatype), timeframe, datatype
     )
-    
+
     summary = {}
     for category in expenses_summary.index:
         category_expenses = expenses_summary.loc[category]
         summary[category] = tidy(category_expenses, timeframe, datatype)
-    
+
     # Generate a set of plots for each expense category
     for category in expenses_summary.index:
         general_properties['category'] = category
         f, axs = plt.subplots(2, 2, figsize=(20,10))
-                
+
         # Subplot 1: expense category vs totals each month
         data = [monthly_totals, summary[category]]
         axs[0][0] = do_monthly_subplot1(axs[0][0], data, general_properties)
-          
+
         # Subplot 2: expense category / totals each month
         data = monthly_fraction.T[category]
         axs[0][1] = do_monthly_subplot2(axs[0][1], data, general_properties)
-        
+
         # Subplot 3: Spending distribution if amount vs date
         data = stats.add_dateid(main_dataframe, category)
         axs[1][0] = do_monthly_subplot3(axs[1][0], data, general_properties)
-        
+
         # Subplot 4: rolling averages of expense category each month
         data = summary[category]
         axs[1][1] = do_monthly_subplot4(axs[1][1], data, general_properties)
-         
+
         # Write data
         f.tight_layout()
-        plotWritePath = setup.getOutputPlotPath()
-        figPath = plotWritePath + category + ' monthly.png'
-        plt.savefig(figPath, bbox_inches='tight')
-        print(' >',figPath)
+        filename = category + '.png'
+        filepath = user_io.directory(filename,'Pm')
+        plt.savefig(filepath, bbox_inches='tight')
+        print(' >>',filepath)
     return
 
 
@@ -85,13 +85,13 @@ def annual(main_dataframe, timeframe, datatype):
     """
     Generate a plot capturing yearly changes for each expense
     category. Each plot contains four subplots:
-        1. Total annual spendings for each category 
+        1. Total annual spendings for each category
         2. (Expense category / total expenses) ratio for each category
         3. Total spendings per year
         4. Total distribution of spendings per year: amount vs date
     """
     f, axs = plt.subplots(2, 2, figsize=(20, 10))
-    
+
     general_properties = {
         'xlabels': date_labels(main_dataframe, 'YearMonth'),
         'period': timeframe,
@@ -117,10 +117,9 @@ def annual(main_dataframe, timeframe, datatype):
 
     # Write data
     f.tight_layout()
-    plotWritePath = setup.getOutputPlotPath()
-    figPath = plotWritePath + 'annual.png'
-    plt.savefig(figPath, bbox_inches='tight')
-    print(' >',figPath)
+    filepath = user_io.directory('summary.png','Pa')
+    plt.savefig(filepath, bbox_inches='tight')
+    print(' >>',filepath)
     return
 
 
@@ -147,7 +146,7 @@ def do_monthly_subplot1(axis, data, general_properties):
     overall_monthly_expenses.plot(
         kind='bar',
         y=datatype,
-        x=timeframe,           
+        x=timeframe,
         cmap=plt.cm.Blues,
         ylim=new_limits(overall_monthly_expenses[datatype],100),
         edgecolor = "k",
@@ -162,7 +161,7 @@ def do_monthly_subplot1(axis, data, general_properties):
         ax=axis,
         rot=0
     )
-    
+
     axis.set_xlabel("")
     axis.grid(linestyle=':')
     axis.xaxis.grid(False)
@@ -178,7 +177,7 @@ def do_monthly_subplot2(axis, data, general_properties):
     """
     Generate the 2nd monthly subplot.
     It plots the ratio of (expense category / total expenses)
-    for each month. 
+    for each month.
 
     Input:
         axis                    Plot axis
@@ -187,12 +186,12 @@ def do_monthly_subplot2(axis, data, general_properties):
     Output:
         axis                    Modified plot axis
     """
-    
+
     expense_category = general_properties['category']
     new_xlabels = general_properties['xlabels']
     timeframe = general_properties['period']
     datatype = general_properties['dtype']
-    
+
     category_fraction = tidy(data, timeframe, datatype)
     category_fraction.plot(
         kind='bar',
@@ -203,7 +202,7 @@ def do_monthly_subplot2(axis, data, general_properties):
         ax=axis,
         rot=0
     )
-    
+
     axis.set_xlabel("")
     axis.grid(linestyle=':')
     axis.xaxis.grid(False)
@@ -230,7 +229,7 @@ def do_monthly_subplot3(axis, data, general_properties):
     expense_category = general_properties['category']
     new_xlabels = general_properties['xlabels']
     datatype = general_properties['dtype']
- 
+
     data.plot(
         x='date_id',
         y=datatype,
@@ -241,7 +240,7 @@ def do_monthly_subplot3(axis, data, general_properties):
         s=40,
         c='k'
     )
-    
+
     axis.set_xlabel("")
     axis.grid(linestyle=':')
     axis.set_ylabel(datatype)
@@ -254,7 +253,7 @@ def do_monthly_subplot3(axis, data, general_properties):
 def do_monthly_subplot4(axis, data, general_properties):
     """
     Generate the 4th monthly subplot showing two
-    rolling averages for expense category. 
+    rolling averages for expense category.
 
     Input:
         axis                    Plot axis
@@ -279,10 +278,10 @@ def do_monthly_subplot4(axis, data, general_properties):
         ax=axis,
         rot=0
     )
-    
+
     mra = '-monthly rolling average'
     apply_legends = [str(x) + mra for x in rolling_windows]
-    
+
     axis.set_xlabel("")
     axis.grid(linestyle=':')
     axis.xaxis.grid(False)
@@ -297,7 +296,7 @@ def do_monthly_subplot4(axis, data, general_properties):
 def do_yearly_subplot1(axis, data, general_properties):
     """
     Generate the first yearly subplot, showing total
-    spendings on each category across the years. 
+    spendings on each category across the years.
 
     Input:
         axis                    Plot axis
@@ -312,9 +311,9 @@ def do_yearly_subplot1(axis, data, general_properties):
         ylim=new_limits(data,250),
         edgecolor = "k",
         ax=axis,
-        rot=0   
+        rot=0
     )
-    
+
     axis.set_title('Total annual expenses')
     axis.legend(data.columns.strftime("%Y").values)
     axis.set_ylabel(general_properties['dtype'])
@@ -328,7 +327,7 @@ def do_yearly_subplot2(axis, data, general_properties):
     """
     Generate the 2nd yearly subplot, showing ratio
     of (expense category / total expenses) for all
-    expenses categories across the years. 
+    expenses categories across the years.
 
     Input:
         axis                    Plot axis
@@ -367,7 +366,7 @@ def do_yearly_subplot3(axis, data, general_properties):
     Output:
         axis                    Modified plot axis
     """
-    data.index = data.index.strftime("%Y").values  
+    data.index = data.index.strftime("%Y").values
     data.plot(
         kind='bar',
         edgecolor = "k",
@@ -409,7 +408,7 @@ def do_yearly_subplot4(axis, data, general_properties):
         s=40,
         c='k'
     )
-    
+
     axis.set_ylabel(datatype)
     axis.grid(linestyle=':')
     axis.xaxis.grid(False)
@@ -424,7 +423,7 @@ def date_labels(df,timeframe='YearMonth'):
     """
     For a range of dates in df.index, it generates custom xlabels
     to be used in the plot that look like:
-    
+
     minDate,..., Jan\n2018, Feb, ..., Dec, Jan\n2018, Feb, ..., maxDate
 
     Input:
@@ -433,7 +432,7 @@ def date_labels(df,timeframe='YearMonth'):
     Output:
         xlabels
     """
-    
+
     dates = pd.DataFrame(df[timeframe].unique())
     dates.columns = [timeframe]
 
@@ -457,17 +456,17 @@ def date_labels(df,timeframe='YearMonth'):
 def tidy(df, timeframe, datatype):
     """
     Tidy up and prepare a dataframe that
-    is cut from a pivot table. 
+    is cut from a pivot table.
 
     Input:
-        df            
+        df
         timeframe
         datatype
     Output:
         df
     """
 
-    
+
     df = df.reset_index()
     df.columns = [timeframe, datatype]
     return df
@@ -491,7 +490,7 @@ def new_limits(df,roundup=10):
         roundup       Integer value used for rounding up
     Output:
         [0, xmax]     New limits used for plotting
-    
+
     """
     if isinstance(df, pd.DataFrame):
         df = df.max()
@@ -527,5 +526,5 @@ def rolling_mean(df, datatype, window_sizes):
             center=centre,
             min_periods=1
         ).mean()
-        
+
     return df_rolling_mean
