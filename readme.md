@@ -47,13 +47,13 @@ associated keywords.
 
 For example, if there is a transaction in raw_data.csv:
 | Date      | Description   | Optional_type | Amount |
-| ----------|---------------|---------------|--------|
+| --------- | ------------- | ------------- | ------ |
 | 18/8/2005 | KFC - TOOTING |               | £3.20  |
 | 20/3/2017 | TFL - LONDON  | TRAINS        | 15.20  |
 
 and categories.csv has:
 | Fast food   | Travel        | Groceries  | BLACKLIST |
-| ----------  |---------------|------------|-----------|
+| ----------  | ------------- | ---------- | --------- |
 | MCDONALDS   | TFL           | SAINSBURYS | PAYING IN |
 | KFC         | NATIONAL RAIL | TESCO      |           |
 | BURGER KING | TRAINS        | WAITROSE   |           |
