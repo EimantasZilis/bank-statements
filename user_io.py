@@ -20,7 +20,7 @@ def directory(filename='', *opts):
     """
 
     subdir = ''
-    io_path = r"C:\Users\Eimantas\Dropbox\finances"
+    common = r"C:\Users\Eimantas\Dropbox\finances"
 
     if opts:
         opt = opts[0]
@@ -34,5 +34,5 @@ def directory(filename='', *opts):
                 subdir = tempdir
                 break
 
-    absolute_path = os.path.join(io_path,subdir,filename)
+    absolute_path = os.path.join(common,subdir,filename)
     return absolute_path
