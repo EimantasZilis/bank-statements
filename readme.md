@@ -11,20 +11,20 @@ expenses vary for different categories.
 
 ### Table of Contents
 1. Installation
-1.1 Common directory
-1.2 Input files
+   - Common directory
+   - Input files
 2. Usage
-2.1 Classify transactions
-2.2 Generate plots
+   - Classify transactions
+   - Generate plots
 
 #### 1. Installation
-##### 1.1 common directory
+##### Common directory
 All user input and output files should be located in a COMMON directory:
 C:\Users\Eimantas\Dropbox\finances
 This is currently hard coded in user_io.directory().
 Change the directory to specify where files will be located.
 
-##### 1.2 Input files
+##### Input files
 Two input files are required:
  - COMMON\input data\raw data.csv
  - COMMON\input data\categories.csv
@@ -46,17 +46,17 @@ categories to classify data into. The rows underneath have a list of
 associated keywords.
 
 For example, if there is a transaction in raw_data.csv:
-| Date      | Description   | Optional_type | Amount |
-| --------- | ------------- | ------------- | ------ |
-| 18/8/2005 | KFC - TOOTING |               | £3.20  |
-| 20/3/2017 | TFL - LONDON  | TRAINS        | 15.20  |
+Date | Description | Optional_type | Amount
+--- | --- | --- | ---
+18/8/2005 | KFC - TOOTING | | £3.20
+20/3/2017 | TFL - LONDON | TRAINS | 15.20
 
 and categories.csv has:
-| Fast food   | Travel        | Groceries  | BLACKLIST |
-| ----------  | ------------- | ---------- | --------- |
-| MCDONALDS   | TFL           | SAINSBURYS | PAYING IN |
-| KFC         | NATIONAL RAIL | TESCO      |           |
-| BURGER KING | TRAINS        | WAITROSE   |           |
+Fast food | Travel | Groceries | BLACKLIST
+--- | --- | --- | ---
+MCDONALDS | TFL | SAINSBURYS | PAYING IN
+KFC | NATIONAL RAIL | TESCO |
+BURGER KING | TRAINS | WAITROSE |
 
 The 1st transaction will be classified as 'Fast food'.
 The 2nd one will be classified as 'Travel'.
@@ -67,7 +67,7 @@ excluded from the data set. For example, this is useful if we want to
 exclude transactions for paying into a card.
 
 #### 2. Usage
-##### 2.1 Classify transactions
+##### Classify transactions
 First, the data needs to be classified. Create categories.csv with desired
 categories and run the code.
 
@@ -77,7 +77,7 @@ COMMON\output data\unclassified.csv. Put associated keywords under a
 category of your choice in categories.csv and re-run the code.
 The list of un-classified transactions should be getting smaller.
 
-##### 2.2 Generate plots
+##### Generate plots
 Once the data is classified, it will plot the annual and monthly summary in
 COMMON\plots\Annual and COMMON\plots\Monthly.
 
