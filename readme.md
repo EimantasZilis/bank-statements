@@ -45,18 +45,22 @@ The first row of categories.csv contains a list of
 categories to classify data into. The rows underneath have a list of
 associated keywords.
 
-For example, if there is a transaction in raw_data.csv:
-Date | Description | Optional_type | Amount
-:---: | :---: | :---: | :---:
-18/8/2005 | KFC - TOOTING | | £3.20
-20/3/2017 | TFL - LONDON | TRAINS | 15.20
+For example, if there is a transaction in raw_data.csv
 
-and categories.csv has:
-Fast food | Travel | Groceries | BLACKLIST
-:---: | :---: | :---: | :---:
-MCDONALDS | TFL | SAINSBURYS | PAYING IN
-KFC | NATIONAL RAIL | TESCO | BAD TRANSACTION
-BURGER KING | TRAINS | WAITROSE | PAYMENT RECEIVED
+
+| Date | Description | Optional_type | Amount |
+| :---: | :---: | :---: | :---: |
+| 18/8/2005 | KFC - TOOTING | | £3.20 |
+| 20/3/2017 | TFL - LONDON | TRAINS | 15.20 |
+
+and categories.csv has
+
+
+| Fast food | Travel | Groceries | BLACKLIST |
+| :---: | :---: | :---: | :---: |
+| MCDONALDS | TFL | SAINSBURYS | PAYING IN |
+| KFC | NATIONAL RAIL | TESCO | BAD TRANSACTION |
+| BURGER KING | TRAINS | WAITROSE | PAYMENT RECEIVED |
 
 The 1st transaction will be classified as 'Fast food'.
 The 2nd one will be classified as 'Travel'.
