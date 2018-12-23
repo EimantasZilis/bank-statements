@@ -59,7 +59,6 @@ def validate(df):
     df.Amount = df.Amount.map(lambda x: re.sub('[£|,]', '', x))
     df.Amount = df.Amount.astype(float)
     df.Date = pd.to_datetime(df.Date)
-
     df = remove_returns(df)
     df = categories.classify_data(df)
 
@@ -72,10 +71,7 @@ def validate(df):
         sys.exit()
 
     df = categories.remove_blacklisted_transactions(df)
-
-    df['Week']  = df.Date.map(lambda dt: dt.isocalendar()[1])
-    df['YearMonth'] = df.Date.map(lambda dt: dt.replace(day=1))
-    df['Year'] = df.Date.map(lambda dt: dt.replace(month=1,day=1))
+    df = add_date_cols(df)
 
     df.drop(
         columns=['Description', 'Optional_type'],
@@ -148,6 +144,21 @@ def remove_returns(df):
             break
     return df
 
+def add_date_cols(df):
+    """
+    Add extra columns to the dataframe:
+        Week:       Week of the year.
+        YearMonth:  Month and year.
+        Year:       Year
+        delta:      Difference of every date compared to the earliest one.
+
+    """
+    min_date = df.Date.min()
+    df['delta'] = df.Date.map(lambda dt: (dt-min_date).days)
+    df['Week']  = df.Date.map(lambda dt: dt.isocalendar()[1])
+    df['YearMonth'] = df.Date.map(lambda dt: dt.replace(day=1))
+    df['Year'] = df.Date.map(lambda dt: dt.replace(month=1,day=1))
+    return df
 
 def export_classified_data(df):
     """ Export classified data to csv. """

@@ -82,7 +82,7 @@ def add_dateid(dataframe, expense_category=None):
 
     """
     min_date = dataframe.Date.min()
-    dataframe['date_id'] = dataframe.Date.map(lambda dt: (dt - min_date).days)
+    dataframe['delta'] = dataframe.Date.map(lambda dt: (dt - min_date).days)
 
     if expense_category:
         dataframe = dataframe[dataframe['Type']==expense_category]

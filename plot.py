@@ -65,7 +65,7 @@ def monthly(main_dataframe, timeframe, datatype):
         axs[0][1] = do_monthly_subplot2(axs[0][1], data, general_properties)
 
         # Subplot 3: Spending distribution if amount vs date
-        data = stats.add_dateid(main_dataframe, category)
+        data = main_dataframe[main_dataframe.Type==category]
         axs[1][0] = do_monthly_subplot3(axs[1][0], data, general_properties)
 
         # Subplot 4: rolling averages of expense category each month
@@ -166,8 +166,7 @@ def do_monthly_subplot1(axis, data, general_properties):
     axis.grid(linestyle=':')
     axis.xaxis.grid(False)
     axis.set_ylabel(datatype)
-    axis.set_xticks(new_xlabels.index)
-    axis.set_xticklabels(new_xlabels['label'])
+    axis.set_xticklabels(new_xlabels.label)
     axis.set_title('Monthly expenses for '+ str(expense_category))
     axis.legend(['Total', expense_category])
     return axis
@@ -195,6 +194,7 @@ def do_monthly_subplot2(axis, data, general_properties):
     category_fraction = tidy(data, timeframe, datatype)
     category_fraction.plot(
         kind='bar',
+        x=timeframe,
         y=datatype,
         ylim=new_limits(category_fraction[datatype],5),
         cmap=plt.cm.Blues,
@@ -207,8 +207,7 @@ def do_monthly_subplot2(axis, data, general_properties):
     axis.grid(linestyle=':')
     axis.xaxis.grid(False)
     axis.set_ylabel("%")
-    axis.set_xticks(new_xlabels.index)
-    axis.set_xticklabels(new_xlabels['label'])
+    axis.set_xticklabels(new_xlabels.label)
     axis.set_title(str(expense_category) + ' / total monthly expenses')
     axis.legend([expense_category])
     return axis
@@ -228,13 +227,15 @@ def do_monthly_subplot3(axis, data, general_properties):
     """
     expense_category = general_properties['category']
     new_xlabels = general_properties['xlabels']
+    timeframe = general_properties['period']
     datatype = general_properties['dtype']
 
     data.plot(
-        x='date_id',
+        x='delta',
         y=datatype,
         kind='scatter',
         ylim=new_limits(data[datatype],50),
+        xlim=new_limits(data.delta),
         alpha=0.3,
         ax=axis,
         s=40,
@@ -244,8 +245,8 @@ def do_monthly_subplot3(axis, data, general_properties):
     axis.set_xlabel("")
     axis.grid(linestyle=':')
     axis.set_ylabel(datatype)
-    axis.set_xticks(new_xlabels['f_id'].values)
-    axis.set_xticklabels(new_xlabels['label'].values)
+    axis.set_xticks(new_xlabels.delta)
+    axis.set_xticklabels(new_xlabels.label)
     axis.set_title('Purchase history for '+str(expense_category))
     return axis
 
@@ -265,11 +266,15 @@ def do_monthly_subplot4(axis, data, general_properties):
     rolling_windows = general_properties['rolling_window_sizes']
     expense_category = general_properties['category']
     new_xlabels = general_properties['xlabels']
+    timeframe = general_properties['period']
     datatype = general_properties['dtype']
 
     rolling_averages = rolling_mean(data, datatype, rolling_windows)
+    data_columns = rolling_averages.columns.values[1:]
     rolling_averages.plot(
-        ylim=new_limits(rolling_averages,20),
+        x=timeframe,
+        ylim=new_limits(rolling_averages[data_columns],20),
+        xlim=new_limits(rolling_averages[timeframe],0),
         cmap=plt.cm.tab10,
         linewidth=4,
         kind='line',
@@ -286,8 +291,8 @@ def do_monthly_subplot4(axis, data, general_properties):
     axis.grid(linestyle=':')
     axis.xaxis.grid(False)
     axis.set_ylabel(datatype)
-    axis.set_xticks(new_xlabels.index)
-    axis.set_xticklabels(new_xlabels['label'])
+    axis.set_xticks(new_xlabels.delta)
+    axis.set_xticklabels(new_xlabels.label)
     axis.set_title('Rolling average values for ' + expense_category)
     axis.legend(apply_legends)
     return axis
@@ -400,7 +405,7 @@ def do_yearly_subplot4(axis, data, general_properties):
 
     data.plot(
         kind='scatter',
-        x='date_id',
+        x='delta',
         y=datatype,
         ylim=new_limits(data[datatype],50),
         alpha=0.3,
@@ -414,7 +419,7 @@ def do_yearly_subplot4(axis, data, general_properties):
     axis.xaxis.grid(False)
     axis.set_xlabel("")
     axis.set_title('Complete purchase history')
-    axis.set_xticks(new_xlabels['f_id'].values)
+    axis.set_xticks(new_xlabels['delta'].values)
     axis.set_xticklabels(new_xlabels['label'].values)
     return axis
 
@@ -433,23 +438,26 @@ def date_labels(df,timeframe='YearMonth'):
         xlabels
     """
 
-    dates = pd.DataFrame(df[timeframe].unique())
-    dates.columns = [timeframe]
+    dates = pd.DataFrame(df[timeframe].unique(), columns=[timeframe])
+    dates.sort_values(axis=0, by='YearMonth', inplace=True)
 
     doYears = dates[timeframe] == dates[timeframe].map(
         lambda dt: dt.replace(month=1,day=1))
-    doYears[0] = True
+
+    min_dindex = dates.loc[:,timeframe].idxmin(axis=1)
+    doYears[min_dindex] = True
 
     dates.loc[doYears, 'label'] = dates.loc[doYears, timeframe].map(
         lambda dt: dt.strftime("%b\n%Y")
     )
 
-    doMonths = doYears.map(lambda x: not(x))
+    doMonths = doYears == False#map(lambda x: not(x))
     dates.loc[doMonths, 'label'] = dates.loc[doMonths, timeframe].map(
         lambda dt: dt.strftime("%b")
     )
-    min_date = dates[timeframe].min()
-    dates['f_id'] = dates[timeframe].map(lambda dt: (dt-min_date).days)
+
+    min_date = dates.loc[min_dindex,timeframe]
+    dates['delta'] = dates[timeframe].map(lambda dt: (dt-min_date).days)
     return dates
 
 
@@ -466,9 +474,15 @@ def tidy(df, timeframe, datatype):
         df
     """
 
-
     df = df.reset_index()
     df.columns = [timeframe, datatype]
+
+    dindex = df.loc[:,timeframe].idxmin(axis=1)
+    date_min = df.loc[dindex,timeframe]
+
+    df.loc[:,timeframe] = df.loc[:,timeframe].map(
+        lambda dt: (dt - date_min).days
+    )
     return df
 
 
@@ -504,27 +518,17 @@ def rolling_mean(df, datatype, window_sizes):
     """
     Calculate mean rollong values for df[datatype]
     for a given window size window_sizes.
-
-    Input:
-        df                Input dataframe
-        datatype          Column in df to based rolling mean on
-        window_sizes      a list of integer window_sizes
-    Output:
-        df_rolling_mean   New data frame
-                          df_rolling_mean.index = df.index
-                          Has a column for each item in window_sizes
     """
     centre = False
     smoothing = None
-    mra = '-month rolling average'
-    df_rolling_mean = pd.DataFrame(index=df.index)
     for wsize in window_sizes:
-        col_name = str(wsize) + mra
-        df_rolling_mean[col_name] = df[datatype].fillna(0).rolling(
+        col_name = str(wsize) + '-month rolling average'
+        df[col_name] = df[datatype].fillna(0).rolling(
             wsize,
             win_type=smoothing,
             center=centre,
             min_periods=1
         ).mean()
 
-    return df_rolling_mean
+    df.drop(columns=[datatype], inplace=True, axis=1)
+    return df
