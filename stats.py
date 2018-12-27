@@ -27,44 +27,32 @@ def pivotTable(dataFrame, timeframe, values):
         ptable.columns = ptable.columns.droplevel(0)
         return ptable
 
-def totals(dataframe, timeframe, datatype):
+def totals(ptable):
     """
     Calculate a sum of values in datatype column,
     for each timeframe.
 
-    E.g. totals(df,'YearMonth', 'Amount')
-    would calculate total expenses each month.
-
     Input:
-        dataframe    Input dataframe
-        timeframe    Timeframe available in dataframe, e.g. 'YearMonth'
-        datatype     Column in dataframe to sum along, e.g. 'Amount'
+        ptable       Pivot table
 
     Ouptput:
         total        New dataframe with index = df[timeframe] and
                      datatype column with total values
     """
-    ptable = pivotTable(dataframe, timeframe, datatype)
     total = ptable.sum(axis=0)
     if not(isinstance(total,pd.DataFrame)):
         total.to_frame()
     return total
 
-def ratios(dataframe, timeframe, datatype):
+def ratios(ptable):
     """
     Calculate the ratio of (category expenses/total expenses)
-    for a given timeframe (e.g. 'YearMonth') and datatype
-    column in dataframe (e.g. 'Amount')
-
     Input:
-        dataframe    Input dataframe
-        timeframe    Timeframe available in dataframe, e.g. 'YearMonth'
-        datatype     Column in dataframe to sum along, e.g. 'Amount'
+        ptable       Pivot table
 
     Ouptput:
         total        New dataframe with ratios for each category
     """
-    ptable = pivotTable(dataframe, timeframe, datatype)
     percentages = (ptable/ptable.sum())*100
     return percentages
 

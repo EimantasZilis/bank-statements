@@ -1,42 +1,13 @@
-import pandas as pd
-import categories
-import user_io
 import datetime
 import sys
 import re
 
-def import_data():
-    """
-    import transaction data
+import pandas as pd
 
-    Output:
-        df      dataframe with transaction details.
-                Contains following columns:
-                  - Date: transaction date
-                  - Amount: transaction amount
-                  - Type: Predicted transaction classification
-                  - Week: transaction week of the Year
-                  - YearMonth: transaction month and year
-                  - Year: transaction year
-    """
-    filepath = user_io.directory('raw data.csv')
-    print('Reading transaction data\n >>',filepath,'\n')
+import user_io
+import categories
 
-    try:
-        raw_data = pd.read_csv(filepath, encoding='ISO-8859-1')
-        mand_columns = ['Date', 'Description', 'Optional_type', 'Amount']
-        data = raw_data[mand_columns].copy()
-        data = validate(data)
 
-    except FileNotFoundError:
-        template = file_template()
-        err_details = errtxt(filepath)
-        print(err_details)
-        print('For example...')
-        print(template)
-        sys.exit()
-
-    return data
 
 
 def validate(df):
@@ -222,3 +193,22 @@ def file_template():
     template = pd.DataFrame.from_dict(data=example_data, orient='columns')
     template = template.to_string(index=False)
     return template
+
+
+# Import data from statements
+filepath = user_io.directory('raw data.csv')
+print('\nReading transaction data\n >>',filepath,'\n')
+
+try:
+    raw_data = pd.read_csv(filepath, encoding='ISO-8859-1')
+    mand_columns = ['Date', 'Description', 'Optional_type', 'Amount']
+    data = raw_data[mand_columns].copy()
+    data = validate(data)
+
+except FileNotFoundError:
+    template = file_template()
+    err_details = errtxt(filepath)
+    print(err_details)
+    print('For example...')
+    print(template)
+    sys.exit()

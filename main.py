@@ -1,5 +1,3 @@
-import plot
+import user_io
 import statements
-
-df = statements.import_data()
-plot.all(df)
+import plot
