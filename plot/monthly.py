@@ -1,5 +1,7 @@
 import pandas as pd
 import matplotlib.pylab as plt
+import matplotlib.cm as cm
+import numpy as np
 
 import stats
 import user_io
@@ -100,7 +102,7 @@ def subplot2(axis, data, category, xlabels):
         x=TIMEFRAME,
         y='Amount',
         ylim=set_ylim,
-        cmap=plt.cm.Blues,
+        cmap=plt.cm.Blues_r,
         edgecolor = "k",
         ax=axis,
         rot=0
@@ -121,20 +123,22 @@ def subplot3(axis, data, category, xlabels):
     Generate the 3rd monthly subplot showing spending
     distribution of amount vs date.
     """
-    set_ylim = generate.min_max_lims(data['Amount'], roundup=50, minval=0.1)
-    set_xlim = generate.min_max_lims(data.delta)
-    data.plot(
-        x='delta',
-        y='Amount',
-        kind='scatter',
-        ylim=set_ylim,
-        xlim=set_xlim,
+
+    axis.scatter(
+        data.delta,
+        data.Amount,
+        color=cm.Blues(1.),
+        marker='o',
         alpha=0.3,
-        ax=axis,
-        s=40,
-        c='k'
+        s=40
     )
 
+    new_ylim = generate.min_max_lims(data.Amount, roundup=50, minval=0.1)
+    new_xlim = generate.min_max_lims(data.delta)
+
+    axis.set_ylim(new_xlim)
+    axis.set_yscale('log')
+    axis.set_ylim(new_ylim)
     axis.set_xlabel("")
     axis.grid(linestyle=':')
     axis.set_ylabel('Amount')
@@ -155,10 +159,12 @@ def subplot4(axis, data, category, xlabels):
     )
     set_ylim = generate.min_max_lims(rolling_averages,20)
     set_xlim = generate.min_max_lims(rolling_averages.index,0)
+    colours = cm.Blues(np.linspace(0.35,1,3))
+
     rolling_averages.plot(
         ylim=set_ylim,
         xlim=set_xlim,
-        cmap=plt.cm.tab10,
+        color=colours,
         linewidth=4,
         kind='line',
         style='-',

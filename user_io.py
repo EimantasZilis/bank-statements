@@ -3,7 +3,7 @@ import os
 # Initialise directories
 print('Initialising user directories...')
 common = r"C:\Users\Eimantas\Dropbox\finances"
-folders = ["input data", "output data", "plots\\Monthly", "plots\\Annual"]
+folders = ["input data", "output data", "plots\\Monthly"]
 for folder in folders:
     dir = os.path.join(common,folder)
     os.makedirs(dir, exist_ok=True)
@@ -29,7 +29,7 @@ def directory(filename='', *opts):
     subdir = ''
     if opts:
         opt = opts[0]
-        ok_opts = {'Pm': r'plots\Monthly', 'Pa': r'plots\Annual'}
+        ok_opts = {'Pm': r'plots\Monthly'}
         if opt in ok_opts:
             subdir = ok_opts[opt]
 

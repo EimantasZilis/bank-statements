@@ -1,5 +1,7 @@
 import matplotlib.pylab as plt
+import matplotlib.cm as cm
 import pandas as pd
+import numpy as np
 
 import stats
 import user_io
@@ -110,18 +112,20 @@ def subplot4(axis, data):
     Generate the 4th yearly subplot, showing spending
     distribution of amount vs date.
     """
-    new_ylim = generate.min_max_lims(data['Amount'], roundup=50, minval=0.1)
-    data.plot(
-        kind='scatter',
-        x='delta',
-        y='Amount',
-        ylim=new_ylim,
+    axis.scatter(
+        data.delta,
+        data.Amount,
+        color=cm.Blues(1.),
+        marker='o',
         alpha=0.3,
-        ax=axis,
-        s=40,
-        c='k'
+        s=40
     )
 
+    new_ylim = generate.min_max_lims(data.Amount, roundup=50, minval=0.1)
+    new_xlim = generate.min_max_lims(data.delta, minval=0)
+    axis.set_ylim(new_xlim)
+    axis.set_yscale('log')
+    axis.set_ylim(new_ylim)
     axis.set_ylabel('Amount')
     axis.grid(linestyle=':')
     axis.xaxis.grid(False)
