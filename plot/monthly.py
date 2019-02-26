@@ -1,4 +1,3 @@
-import pandas as pd
 import matplotlib.pylab as plt
 import matplotlib.cm as cm
 import numpy as np
@@ -136,9 +135,9 @@ def subplot3(axis, data, category, xlabels):
     new_ylim = generate.min_max_lims(data.Amount, roundup=50, minval=0.1)
     new_xlim = generate.min_max_lims(data.delta)
 
-    axis.set_ylim(new_xlim)
-    axis.set_yscale('log')
     axis.set_ylim(new_ylim)
+    axis.set_xlim(new_xlim)
+    axis.set_yscale('log')
     axis.set_xlabel("")
     axis.grid(linestyle=':')
     axis.set_ylabel('Amount')
