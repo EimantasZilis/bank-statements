@@ -1,5 +1,8 @@
-import plot
 import statements
+import plot.monthly
+import plot.summary
 
-df = statements.import_data()
-plot.all(df)
+
+print('Generating plots...')
+plot.monthly.do_it(statements.data)
+plot.summary.do_it(statements.data)

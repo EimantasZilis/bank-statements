@@ -1,11 +1,18 @@
 import os
 
-file_locations = {
-    'output data':
-        ['excluded returns.csv', 'unclassified.csv', 'classified.csv'],
-    'input data':
-        ['categories.csv', 'raw data.csv']
-}
+# Initialise directories
+print('Initialising user directories...')
+common = r"C:\Users\Eimantas\Dropbox\finances"
+folders = ["input data", "output data", "plots\\Monthly"]
+for folder in folders:
+    dir = os.path.join(common,folder)
+    os.makedirs(dir, exist_ok=True)
+    print(' >>',dir)
+
+# Set up required files and their directories
+input_files = ['categories.csv', 'raw data.csv']
+output_files = ['excluded returns.csv', 'unclassified.csv', 'classified.csv']
+file_locations = {'output data': output_files, 'input data': input_files}
 
 def directory(filename='', *opts):
     """
@@ -20,11 +27,9 @@ def directory(filename='', *opts):
     """
 
     subdir = ''
-    common = r"C:\Users\Eimantas\Dropbox\finances"
-
     if opts:
         opt = opts[0]
-        ok_opts = {'Pm': r'plots\Monthly', 'Pa': r'plots\Annual'}
+        ok_opts = {'Pm': r'plots\Monthly'}
         if opt in ok_opts:
             subdir = ok_opts[opt]
 

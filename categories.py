@@ -5,8 +5,8 @@ import re
 
 def import_data():
     """
-    Import transaction categories and their keywords from csv and their
-    keywords. Put it in dictionary
+    Import transaction categories and their keywords from
+    csv and their keywords. Put it in dictionary
     """
 
     print(' >> Importing transaction categories')
