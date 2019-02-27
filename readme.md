@@ -70,6 +70,8 @@ If there are any transactions classified as BLACKLIST, they will be
 excluded from the data set. For example, this is useful if we want to
 exclude transactions for paying into a card.
 
+The dates in the spreadsheet must follow dd/mm/yyyy format.
+
 #### 2. Usage
 ##### Classify transactions
 First, the data needs to be classified. Create categories.csv with desired

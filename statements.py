@@ -29,7 +29,7 @@ def validate(df):
     df.Optional_type = df.Optional_type.fillna('')
     df.Amount = df.Amount.map(lambda x: re.sub('[£|,]', '', x))
     df.Amount = df.Amount.astype(float)
-    df.Date = pd.to_datetime(df.Date)
+    df.Date = pd.to_datetime(df.Date, format="%d/%m/%Y")
     df = remove_returns(df)
     df = categories.classify_data(df)
 
