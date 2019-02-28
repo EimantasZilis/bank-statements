@@ -1,13 +1,10 @@
+import os
 import datetime
 import sys
 import re
-
 import pandas as pd
-
 import user_io
 import categories
-
-
 
 
 def validate(df):
@@ -38,7 +35,7 @@ def validate(df):
 
     unclassified = df.Type.isnull()
     if unclassified.any():
-        export_unclassified_data(df)
+        export_unclassified_data(df[unclassified])
         sys.exit()
 
     df = categories.remove_blacklisted_transactions(df)
@@ -135,7 +132,7 @@ def export_classified_data(df):
     """ Export classified data to csv. """
     classified_path = user_io.directory('classified.csv')
     df.to_csv(classified_path)
-    print('\n','Exporting classified transactions...')
+    print('\n','Updating classified transactions...')
     print(' >>',classified_path,'\n')
     return
 
@@ -145,8 +142,7 @@ def export_unclassified_data(df):
     Generate a warning about unclassified Transactions
     and export unclassified to a csv.
     """
-
-    incomplete = df[unclassified].sort_values(by='Description')
+    incomplete = df.sort_values(by='Description')
     incomplete_path = user_io.directory('unclassified.csv')
     incomplete.to_csv(incomplete_path)
     print('Exporting unclassified transactions...')
@@ -195,10 +191,38 @@ def file_template():
     return template
 
 
+# Some classifications can be specified in unclassified.csv.
+# Update classified.csv with that data.
+try:
+    upath = user_io.directory('unclassified.csv')
+    udata = pd.read_csv(upath, index_col='ID')
+except FileNotFoundError:
+    udata = None
+
+if udata is not None:
+    udata_classified = udata.dropna(axis=0, subset=['Type'])
+    if not udata_classified.empty:
+        try:
+            # Update classifications in classified.csv
+            cpath = user_io.directory('classified.csv')
+            cdata = pd.read_csv(cpath, index_col='ID')
+            cdata.update(udata_classified)
+        except FileNotFoundError:
+            # Copy all classified lines to classified.csv.
+            cdata = udata_classified.copy()
+
+        export_classified_data(cdata)
+        # Amend / remove unclassified.csv
+        if udata.equals(udata_classified):
+            if os.path.exists(upath):
+                os.remove(upath)
+        else:
+            udata.drop(index=udata_classified.index, axis=1, inplace=True)
+            export_unclassified_data(udata)
+
 # Import data from statements
 filepath = user_io.directory('raw data.csv')
 print('\nReading transaction data\n >>',filepath,'\n')
-
 try:
     raw_data = pd.read_csv(filepath, encoding='ISO-8859-1')
     mand_columns = ['Date', 'Description', 'Optional_type', 'Amount']

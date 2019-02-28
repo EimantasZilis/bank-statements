@@ -79,9 +79,16 @@ categories and run the code.
 
 If there are any transactions that cannot be classified into any
 categories in categories.csv, it will export these transactions into
-COMMON\output data\unclassified.csv. Put associated keywords under a
-category of your choice in categories.csv and re-run the code.
-The list of un-classified transactions should be getting smaller.
+COMMON\output data\unclassified.csv.
+
+In order to classify transactions, amend unclassified.csv. Put categories
+against the "Type" next to each transaction and they will be picked
+up the next time the code runs. By doing so, it will remove the lines
+already processed from the CSV. If there are no more unclassified lines
+left, unclassified.csv will be deleted.
+
+Note that the rest of the functionality cannot run until there are no more
+unclassified lines left.
 
 ##### Generate plots
 Once the data is classified, it will plot the annual and monthly summary in
