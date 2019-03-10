@@ -3,16 +3,16 @@ import os
 # Initialise directories
 print('Initialising user directories...')
 common = r"C:\Users\Eimantas\Dropbox\finances"
-folders = ["input data", "output data", "plots\\Monthly"]
+folders = ["Input", "Output", "Plots"]
 for folder in folders:
     dir = os.path.join(common,folder)
     os.makedirs(dir, exist_ok=True)
     print(' >>',dir)
 
 # Set up required files and their directories
-input_files = ['categories.csv', 'raw data.csv']
+input_files = ['categories.csv', 'raw data.csv', 'categories.json']
 output_files = ['excluded returns.csv', 'unclassified.csv', 'classified.csv']
-file_locations = {'output data': output_files, 'input data': input_files}
+file_locations = {'Output': output_files, 'Input': input_files}
 
 def directory(filename='', *opts):
     """

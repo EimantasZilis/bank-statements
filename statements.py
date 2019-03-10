@@ -28,7 +28,7 @@ def validate(df):
     df.Amount = df.Amount.astype(float)
     df.Date = pd.to_datetime(df.Date, format="%d/%m/%Y")
     df = remove_returns(df)
-    df = categories.classify_data(df)
+    classify(df)
 
     if not(df.empty):
         export_classified_data(df)
@@ -48,6 +48,13 @@ def validate(df):
     )
     return df
 
+def classify(df):
+    """
+    Classify transactions and assign their type to
+    a new "Type" column. """
+    df.loc[:,'Type'] = df.apply(
+        lambda x: cats.lookup('|'.join([x.Description, x.Optional_type])),
+        axis=1)
 
 def remove_returns(df):
     """
@@ -193,6 +200,8 @@ def file_template():
 
 # Some classifications can be specified in unclassified.csv.
 # Update classified.csv with that data.
+cats = categories.JsonWrapper("categories.json", "I")
+cats.read()
 try:
     upath = user_io.directory('unclassified.csv')
     udata = pd.read_csv(upath, index_col='ID')
@@ -219,6 +228,14 @@ if udata is not None:
         else:
             udata.drop(index=udata_classified.index, axis=1, inplace=True)
             export_unclassified_data(udata)
+
+        # Update categories dict-
+        for id in udata_classified.index:
+            line = udata_classified.loc[id]
+            key = '|'.join([line.Description, line.Optional_type])
+            value = line.Type
+            cats.update(key, value)
+        cats.write()
 
 # Import data from statements
 filepath = user_io.directory('raw data.csv')
