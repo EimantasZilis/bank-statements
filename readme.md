@@ -21,76 +21,48 @@ expenses vary for different categories.
 ##### Common directory
 All user input and output files should be located in a COMMON directory:
 C:\Users\Eimantas\Dropbox\finances
-This is currently hard coded in user_io.directory().
+This is currently hard coded in file_management.py File class.
 Change the directory to specify where files will be located.
 
 ##### Input files
-Two input files are required:
- - COMMON\input data\raw data.csv
- - COMMON\input data\categories.csv
+One input file is required:
+ - COMMON\Input\raw data.xlsx
 
-raw.data.csv contains transaction data from bank statements.
+raw.data.xlsx contains transaction data from bank statements.
 The first row contains the columns headings and it must contain
 the following columns:
  - Date
  - Description
- - Optional_type
+ - Extra
  - Amount
 
-Optional_type column is mandatory, but the data underneath is optional.
-If transactions contain any pre-categorised data by other sources
-(e.g. bank), it can be put there.
+Extra column is mandatory but the data underneath is optional.
+It can be used for any other reference associated with the transaction:
+e.g. pre-categorised bank data.
 
-The first row of categories.csv contains a list of
-categories to classify data into. The rows underneath have a list of
-associated keywords.
+The dates in the spreadsheet must follow dd/mm/yyyy format.
+Amount column should only contain numeric values.
 
-For example, if there is a transaction in raw_data.csv:
+#### 2. Usage
+##### Classify transactions
 
+By running the code, it will do two things:
+1. It will classify all transaction it already knows about.
+These will be saved in COMMON\Output\classified.xlsx.
+2. Any transactions it cannot classify will be moved to
+COMMON\Output\unclassified.xlsx. The "Type" column will be blank.
+By classifying the lines and putting categories in Type column,
+these transactions will be moved to classified.xlsx next time the code is run.
+If there are no more unclassified lines left, unclassified.xlsx will be deleted.
 
-| Date | Description | Optional_type | Amount |
-| :---: | :---: | :---: | :---: |
-| 18/8/2005 | KFC - TOOTING | | £3.20 |
-| 20/3/2017 | TFL - LONDON | TRAINS | 15.20 |
-
-and categories.csv has:
-
-
-| Fast food | Travel | Groceries | BLACKLIST |
-| :---: | :---: | :---: | :---: |
-| MCDONALDS | TFL | SAINSBURYS | PAYING IN |
-| KFC | NATIONAL RAIL | TESCO | BAD TRANSACTION |
-| BURGER KING | TRAINS | WAITROSE | PAYMENT RECEIVED |
-
-The 1st transaction will be classified as 'Fast food'.
-The 2nd one will be classified as 'Travel'.
-
-BLACKLIST is a special category than can be used in categories.csv.
+BLACKLIST is a special category than can be used when classifying transactions.
 If there are any transactions classified as BLACKLIST, they will be
 excluded from the data set. For example, this is useful if we want to
 exclude transactions for paying into a card.
 
-The dates in the spreadsheet must follow dd/mm/yyyy format.
-
-#### 2. Usage
-##### Classify transactions
-First, the data needs to be classified. Create categories.csv with desired
-categories and run the code.
-
-If there are any transactions that cannot be classified into any
-categories in categories.csv, it will export these transactions into
-COMMON\output data\unclassified.csv.
-
-In order to classify transactions, amend unclassified.csv. Put categories
-against the "Type" next to each transaction and they will be picked
-up the next time the code runs. By doing so, it will remove the lines
-already processed from the CSV. If there are no more unclassified lines
-left, unclassified.csv will be deleted.
-
-Note that the rest of the functionality cannot run until there are no more
-unclassified lines left.
-
 ##### Generate plots
+*** Plot cannot be generated at the moment ****
+
 Once the data is classified, it will plot the annual and monthly summary in
 COMMON\plots\Annual and COMMON\plots\Monthly.
 

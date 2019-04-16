@@ -1,8 +1,8 @@
 import statements
-import plot.monthly
-import plot.summary
 
+def main():
+    statements.import_raw_data()
+    statements.process_unclassified_data()
 
-print('Generating plots...')
-plot.monthly.do_it(statements.data)
-plot.summary.do_it(statements.data)
+if __name__ == "__main__":
+    main()

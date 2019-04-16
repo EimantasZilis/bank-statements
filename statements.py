@@ -1,255 +1,146 @@
-import os
-import datetime
-import sys
-import re
-import pandas as pd
-import user_io
-import categories
+from pandas.api.types import is_numeric_dtype
+import file_management as fm
 
+raw_data = fm.XlsxWrapper("raw data.xlsx", "I")
+raw_data.initialise()
+categories = fm.JsonWrapper("categories.json", "I")
+classified = fm.Statements("classified.xlsx", "O")
+unclassified = fm.Statements("unclassified.xlsx", "O")
 
-def validate(df):
-    """
-    Validate and clean input data, remove expense-return
-    transaction pairs and classify each transaction.
+def validate():
+    """ Validate and clean input data, remove expense-return
+    transaction pairs and classify each transaction. """
 
-    It also adds new columns to the dataframe:
-        - Type: Predicted transaction classification
-        - Week: transaction week of the Year
-        - YearMonth: transaction month and year
-        - Year: transaction year
-    """
+    raw_data.set_index_name('ID')
+    raw_data.set_datetime("Date", "%d/%m/%Y")
+    add_info_column(raw_data)
 
-    print('Validating data...')
+    if not is_numeric_dtype(raw_data.get_attr("Amount")):
+        raise ValueError('"Amount" column contains non-numeric values.')
 
-    df.index.name = 'ID'
-    df.Description = df.Description.fillna('')
-    df.Optional_type = df.Optional_type.fillna('')
-    df.Amount = df.Amount.map(lambda x: re.sub('[£|,]', '', x))
-    df.Amount = df.Amount.astype(float)
-    df.Date = pd.to_datetime(df.Date, format="%d/%m/%Y")
-    df = remove_returns(df)
-    classify(df)
+    remove_returns(raw_data)
+    classify(raw_data)
+    drop_blacklisted_transactions(raw_data)
+    add_date_cols(raw_data)
 
-    if not(df.empty):
-        export_classified_data(df)
+    if not raw_data.blank():
+        raw_data.write_as(new_name="classified.xlsx", new_type="O")
 
-    unclassified = df.Type.isnull()
-    if unclassified.any():
-        export_unclassified_data(df[unclassified])
-        sys.exit()
+    blank_types = raw_data.get_attr("Type") == ""
+    if blank_types.any():
+        classified_index = raw_data.filter(~blank_types).index.values.tolist()
+        raw_data.drop_rows(classified_index)
+        raw_data.write_as(new_name="unclassified.xlsx", new_type="O")
 
-    df = categories.remove_blacklisted_transactions(df)
-    df = add_date_cols(df)
+def add_info_column(raw_data):
+    raw_data.get_attr("Description").fillna("", inplace=True)
+    raw_data.get_attr("Extra").fillna("", inplace=True)
+    raw_data.merge_columns("Description", "Extra", "Info", True)
 
-    df.drop(
-        columns=['Description', 'Optional_type'],
-        inplace=True,
-        axis=1
-    )
-    return df
+def classify(raw_data):
+    """ Classify transactions and assign their
+    type to a new "Type" column. """
+    types = raw_data.get_attr("Info").apply(lambda x: categories.lookup(x, ""))
+    raw_data.set("Type", types)
 
-def classify(df):
-    """
-    Classify transactions and assign their type to
-    a new "Type" column. """
-    df.loc[:,'Type'] = df.apply(
-        lambda x: cats.lookup('|'.join([x.Description, x.Optional_type])),
-        axis=1)
+def drop_blacklisted_transactions(df):
+    """ Remove transactions that have type 'BLACKLIST' """
+    black = raw_data.get_attr("Type") == "BLACKLIST"
+    black_index = raw_data.filter(black).index
+    raw_data.drop_rows(black_index)
 
-def remove_returns(df):
-    """
-    Find pairs of transactions with the same, but negative amounts.
-    This indicates an item being returned: net spending of 0.
-    Remove these transaction pairs.
+def remove_returns(raw_data):
+    """ Find pairs of transactions with the same, but
+    negative amounts. This indicates an item being returned:
+    net spending of 0. Remove these transaction pairs. """
 
-    Export the transaction pairs into csv. These represent removed
-    data from the df.
-    """
+    negative_amounts = raw_data.get_attr("Amount") < 0
+    returns_df = raw_data.filter(negative_amounts)
+    if returns_df.empty:
+        return
 
-    removed = {
-        'Amount': [],
-        'Buy ID': [],
-        'Return ID': [],
-        'Buy date': [],
-        'Return date': [],
-        'Description': [],
-        'Optional_type': []
-    }
+    returns = fm.XlsxWrapper("Excluded returns.xlsx", "O", returns_df)
 
-    returns = df[df['Amount'] < 0]
-    for return_index in returns.index:
-        return_transaction = returns.loc[return_index]
+    for return_id in returns.index_values():
+        return_line = returns.filter_by_index(return_id)
+        orig_amount = raw_data.get_attr("Amount") == -1*return_line.Amount
+        orig_desc = raw_data.get_attr("Info") == return_line.Info
+        expenses = raw_data.filter(orig_amount & orig_desc)
 
-        orig_expenses = df[
-            (df.Amount == -1*return_transaction.Amount) \
-            & (df.Description == return_transaction.Description)
-        ].copy()
-
-        if not(orig_expenses.empty):
-            # Find smallest (return-purchase) date difference
-            orig_expenses['Diff'] = orig_expenses.loc[:,'Date'].map(
-                lambda x: (return_transaction['Date'] - x).days
-            )
-
-            past_expenses = orig_expenses['Diff'] >= 0
+        if expenses.empty:
+            returns.df.drop(return_id,inplace=True)
+        else:
+            # Find closest expense date compared to return date
+            expenses["Delta"] = (return_line["Date"] - expenses.Date)
+            past_expenses = expenses.Delta.dt.days >= 0
             if not(past_expenses.any()):
                 continue
 
-            expenses = orig_expenses[past_expenses]
-            matching_index = expenses.loc[:,'Diff'].idxmin(axis=0)
-            df = df.drop(df.index[[matching_index, return_index]])
-            expense = expenses.loc[matching_index]
+            expenses = expenses[past_expenses]
+            buy_id = expenses.Delta.idxmin(axis=0)
+            raw_data.drop_rows([buy_id, return_id])
 
-            # Add dropped transactions to 'removed' dict
-            removed['Description'].append(return_transaction['Description'])
-            removed['Return date'].append(return_transaction['Date'])
-            removed['Amount'].append(-1*return_transaction['Amount'])
-            removed['Optional_type'].append(expense['Optional_type'])
-            removed['Buy date'].append(expense['Date'])
-            removed['Return ID'].append(return_index)
-            removed['Buy ID'].append(matching_index)
+    if not returns.blank():
+        returns.write()
 
-    # Export to csv
-    for column in removed:
-        if column != []:
-            filepath = user_io.directory('excluded returns.csv')
-            pd.DataFrame(removed).to_csv(filepath, index=False)
-            print(' >> Excluded return transaction pairs')
-            print(' >>',filepath)
-            break
-    return df
+def add_date_cols(raw_data):
+    """ Add extra columns to the dataframe:
+    Week (of the year), YearMonth (Month and year), Year and delta
+    (difference between days compared to the earliest one) """
 
-def add_date_cols(df):
-    """
-    Add extra columns to the dataframe:
-        Week:       Week of the year.
-        YearMonth:  Month and year.
-        Year:       Year
-        delta:      Difference of every date compared to the earliest one.
+    date_col = raw_data.get_attr("Date")
+    min_date = date_col.min()
+    raw_data.set("delta", date_col.map(lambda dt: (dt-min_date).days))
+    raw_data.set("Week", date_col.map(lambda dt: dt.isocalendar()[1]))
+    raw_data.set("YearMonth", date_col.map(
+        lambda dt: dt.replace(day=1).strftime("%b %Y")))
+    raw_data.set("Year", date_col.map(
+        lambda dt: dt.replace(month=1,day=1).strftime("%Y")))
 
-    """
-    min_date = df.Date.min()
-    df['delta'] = df.Date.map(lambda dt: (dt-min_date).days)
-    df['Week']  = df.Date.map(lambda dt: dt.isocalendar()[1])
-    df['YearMonth'] = df.Date.map(lambda dt: dt.replace(day=1))
-    df['Year'] = df.Date.map(lambda dt: dt.replace(month=1,day=1))
-    return df
+def update_classified_data(newly_classified):
+    """ Update classified data with newly_classified """
+    print(" >> Updating classified data")
+    classified.update(newly_classified)
+    classified.write()
 
-def export_classified_data(df):
-    """ Export classified data to csv. """
-    classified_path = user_io.directory('classified.csv')
-    df.to_csv(classified_path)
-    print('\n','Updating classified transactions...')
-    print(' >>',classified_path,'\n')
-    return
+def update_unclassified_data(newly_classified):
+    """ Amend or remove unclassified data """
+    print(" >> Updating unclassified data")
+    if unclassified.equal(newly_classified):
+        unclassified.delete_file()
+    else:
+        unclassified.drop_rows(newly_classified.index)
+        unclassified.write()
 
+def update_categories_dict(newly_classified):
+    """ Update categories dictionary with new classifications """
+    print(" >> Updating classifications")
+    for id in newly_classified.index:
+        line = newly_classified.loc[id]
+        categories.update(line.Info, line.Type)
+    categories.write()
 
-def export_unclassified_data(df):
-    """
-    Generate a warning about unclassified Transactions
-    and export unclassified to a csv.
-    """
-    incomplete = df.sort_values(by='Description')
-    incomplete_path = user_io.directory('unclassified.csv')
-    incomplete.to_csv(incomplete_path)
-    print('Exporting unclassified transactions...')
-    print(' >>',incomplete_path)
-    print(' >> Make sure all transactions are classified to continue')
-    return
+def import_raw_data():
+    """ Import data f   rom raw_data.xlsx, tidy it up
+    and classify transactions based on the known,
+    classified transactions """
+    mand_columns = ['Date', 'Description', 'Extra', 'Amount']
+    raw_data.drop_columns(mand_columns)
+    validate()
 
+def process_unclassified_data():
+    """ Check for any manually classified transactions in
+    unclassified.xlsx and update classified.xlsx lines. """
+    if not unclassified.blank():
+        newly_classified = unclassified.df.dropna(axis=0, subset=['Type'])
 
-def errtxt(filepath):
-    """ Generate missing 'raw data.csv' file error txt with guidance """
+        new_count = len(newly_classified.index)
+        total_count = unclassified.count_rows()
+        info = "{c} / {t} classified in unclassified.xlsx"
+        print(info.format(c=new_count, t=total_count))
 
-    errtxt = (
-        'ERROR: File with input transaction data not found.\n'
-        ' >> ' + str(filepath) + '\n'
-        ' >> It must have mandatory columns:\n'
-        '    "Date" - transaction date.\n'
-        '    "Description" - text describing transaction.\n'
-        '    "Optional_type" - Category specified by data source (optional)\n'
-        '    "Amount" - transaction amount. It assumes it is in pounds and\n'
-        '               removes any "£" symbols.\n'
-        '               Transactions with any other non-numeric characters\n'
-        '               will be ignored.\n'
-    )
-    return errtxt
-
-
-def file_template():
-    """
-    Generate a sample template for categories.csv
-    """
-    example_data = {
-        'Date    ':
-            ['01/02/03', '22/11/16', '...'],
-        'Description' :
-            ['Sainsbury\'s', 'Tesco', '...'],
-        'Optional_type':
-            ['Online', 'food shopping', '...'],
-        ' Amount':
-            ['£15.03', '0.2', '...'],
-        '...':
-            ['...', '...', '...']
-        }
-
-    template = pd.DataFrame.from_dict(data=example_data, orient='columns')
-    template = template.to_string(index=False)
-    return template
-
-
-# Some classifications can be specified in unclassified.csv.
-# Update classified.csv with that data.
-cats = categories.JsonWrapper("categories.json", "I")
-cats.read()
-try:
-    upath = user_io.directory('unclassified.csv')
-    udata = pd.read_csv(upath, index_col='ID')
-except FileNotFoundError:
-    udata = None
-
-if udata is not None:
-    udata_classified = udata.dropna(axis=0, subset=['Type'])
-    if not udata_classified.empty:
-        try:
-            # Update classifications in classified.csv
-            cpath = user_io.directory('classified.csv')
-            cdata = pd.read_csv(cpath, index_col='ID')
-            cdata.update(udata_classified)
-        except FileNotFoundError:
-            # Copy all classified lines to classified.csv.
-            cdata = udata_classified.copy()
-
-        export_classified_data(cdata)
-        # Amend / remove unclassified.csv
-        if udata.equals(udata_classified):
-            if os.path.exists(upath):
-                os.remove(upath)
-        else:
-            udata.drop(index=udata_classified.index, axis=1, inplace=True)
-            export_unclassified_data(udata)
-
-        # Update categories dict-
-        for id in udata_classified.index:
-            line = udata_classified.loc[id]
-            key = '|'.join([line.Description, line.Optional_type])
-            value = line.Type
-            cats.update(key, value)
-        cats.write()
-
-# Import data from statements
-filepath = user_io.directory('raw data.csv')
-print('\nReading transaction data\n >>',filepath,'\n')
-try:
-    raw_data = pd.read_csv(filepath, encoding='ISO-8859-1')
-    mand_columns = ['Date', 'Description', 'Optional_type', 'Amount']
-    data = raw_data[mand_columns].copy()
-    data = validate(data)
-
-except FileNotFoundError:
-    template = file_template()
-    err_details = errtxt(filepath)
-    print(err_details)
-    print('For example...')
-    print(template)
-    sys.exit()
+        if not newly_classified.empty:
+            print("Processing unclassified data...")
+            update_classified_data(newly_classified)
+            update_unclassified_data(newly_classified)
+            update_categories_dict(newly_classified)
