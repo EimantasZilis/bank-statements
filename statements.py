@@ -92,10 +92,8 @@ def add_date_cols(raw_data):
     min_date = date_col.min()
     raw_data.set("delta", date_col.map(lambda dt: (dt-min_date).days))
     raw_data.set("Week", date_col.map(lambda dt: dt.isocalendar()[1]))
-    raw_data.set("YearMonth", date_col.map(
-        lambda dt: dt.replace(day=1).strftime("%b %Y")))
-    raw_data.set("Year", date_col.map(
-        lambda dt: dt.replace(month=1,day=1).strftime("%Y")))
+    raw_data.set("YearMonth", date_col.map(lambda dt: dt.replace(day=1)))
+    raw_data.set("Year", date_col.map(lambda dt: dt.replace(month=1,day=1)))
 
 def update_classified_data(newly_classified):
     """ Update classified data with newly_classified """
@@ -119,6 +117,10 @@ def update_categories_dict(newly_classified):
         line = newly_classified.loc[id]
         categories.update(line.Info, line.Type)
     categories.write()
+
+def get_classified_data():
+    """ Get classified data """
+    return classified
 
 def import_raw_data():
     """ Import data f   rom raw_data.xlsx, tidy it up
