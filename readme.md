@@ -61,8 +61,6 @@ excluded from the data set. For example, this is useful if we want to
 exclude transactions for paying into a card.
 
 ##### Generate plots
-*** Plot cannot be generated at the moment ****
-
 Once the data is classified, it will plot the annual and monthly summary in
 COMMON\plots\Annual and COMMON\plots\Monthly.
 
