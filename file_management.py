@@ -147,21 +147,13 @@ class JsonWrapper(File):
                     self.dict[value].append(id)
                     frequencies[value] += 1
 
-class XlsxWrapper(File):
-    """ A class for working with .xlsx files.
-    It stores data in pandas dataframe for data
-    manipulation and combines xlsxwriter for file I/O """
+class XlsxFile(File):
+    """ A class for manipulating Xlsx file properties and layout """
     mandatory_columns = ("Date", "Amount")
 
     def __init__(self, filename=None, type='', df=None):
         super().__init__(filename=filename, type=type)
         self.df = df
-
-    def initialise(self, mand_cols=None):
-        """ Initialise the dataframe
-        Read the file and validate it. """
-        self.read()
-        self.validate(mand_cols)
 
     def read(self, sheet="Sheet1"):
         """ Read categories from .xlsx file. Initialise
@@ -171,7 +163,7 @@ class XlsxWrapper(File):
             fp = self.file_pointer()
             self.df = pd.read_excel(fp, sheet_name=sheet)
         except FileNotFoundError:
-            cols = {col: [] for col in XlsxWrapper.mandatory_columns}
+            cols = {col: [] for col in XlsxFile.mandatory_columns}
             self.df = pd.DataFrame(cols)
 
     def write(self, sheet="Sheet1", file_pointer=None):
@@ -194,10 +186,10 @@ class XlsxWrapper(File):
         Columns "None" in mand_cols are ignored. """
 
         if mand_cols is None:
-            all_mand_cols = list(XlsxWrapper.mandatory_columns)
+            all_mand_cols = list(XlsxFile.mandatory_columns)
         else:
             all_mand_cols = [col for col in mand_cols if col is not None]
-            all_mand_cols.extend(XlsxWrapper.mandatory_columns)
+            all_mand_cols.extend(XlsxFile.mandatory_columns)
 
         xlsx_set = set(self.df.columns.values)
         mand_set = set(all_mand_cols)
@@ -207,32 +199,17 @@ class XlsxWrapper(File):
             err_txt = [err_msg, self.filename, ": ", ", ".join(missing_cols)]
             raise ValueError("".join(err_txt))
 
-    def show(self, n=5):
-        """ Show dataframe contents. """
-        print(self.df.head(n))
+    def initialise(self, mand_cols=None):
+        """ Initialise the dataframe
+        Read the file and validate it. """
+        self.read()
+        self.validate(mand_cols)
 
-    def blank(self):
-        """ Returns True if dataframe is empty.
-        False otherwise """
-        return self.df.empty
+class XlsxData(XlsxFile):
+    """ A class for working with Xlsx file data """
 
-    def filter(self, values):
-        """ Returns a copy of dataframe
-        containing filtered values """
-        return self.df[values].copy()
-
-    def filter_by_index(self, id):
-        """ Return datarame when
-        filtering by index """
-        return self.df.loc[id]
-
-    def set_index_name(self, name):
-        """ Set index name"""
-        self.df.index.name = name
-
-    def apply(self, condition):
-        """ Apply a condition to a dataframe"""
-        return self.df.apply(condition, axis=1)
+    def __init__(self, filename=None, type='', df=None):
+        super().__init__(filename=filename, type=type, df=df)
 
     def set_datetime(self, column=None, format=None):
         """ Converts a column to datetime with a given format.
@@ -251,44 +228,6 @@ class XlsxWrapper(File):
         else:
             self.df[column] = pd.to_datetime(self.df[column], format=format)
 
-    def get_attr(self, attribute):
-        """ Get attribute values from a dataframe"""
-        return getattr(self.df, attribute)
-
-    def set(self, attribute, values):
-        """ Set values to an attribute
-        within a dataframe """
-        self.df[attribute] = values
-
-    def update(self, new_df):
-        """ Update dataframe with data from
-        a new dataframe """
-        if self.blank():
-            self.df = new_df
-        else:
-            self.df.update(new_df)
-
-    def equal(self, new_df):
-        """ Return True if new_df is the same
-        dataframe as the class instance """
-        return self.df.equals(new_df)
-
-    def drop_rows(self, drop_index):
-        """ Drop rows based on drop_index. It removes
-        rows from instance that share the same index """
-        drop_type = type(drop_index)
-        if isinstance(drop_index, list) or isinstance(drop_index, int):
-            self.df.drop(drop_index, inplace=True)
-        else:
-            indexes_in_df = drop_index.isin(self.df.index.values).tolist()
-            if all(indexes_in_df):
-                self.df.drop(index=drop_index, axis=1, inplace=True)
-            else:
-                err_txt = "Cannot drop some the rows with these IDs:\n >> {ids} \
-                          \nThey are not in {file}"
-                err = err_txt.format(ids=drop_index.values, file=self.filename)
-                raise ValueError(err)
-
     def index_name(self):
         """ Return index name against the dataframe """
         return self.df.index.name
@@ -296,19 +235,6 @@ class XlsxWrapper(File):
     def current_columns(self):
         """ Return a list of current column names"""
         return list(self.df.columns.values)
-
-    def drop_columns(self, mandatory_cols=None, drop_cols=None):
-        """ Drop columns. mandatory_cols and drop_cols
-        are mutually exclusive. It will drop any columns
-        specified in drop_cols. Alternatively, it will drop
-        any columns not in mandatory_cols."""
-        if drop_cols is not None:
-            pass
-        elif mandatory_cols is not None:
-            current_cols = set(self.current_columns())
-            mand_cols = set(mandatory_cols)
-            drop_cols = current_cols - mand_cols
-        self.df.drop(columns=drop_cols, axis=1, inplace=True)
 
     def add_columns(self, new_columns, value):
         """ Adds columns to a data frame and
@@ -340,12 +266,98 @@ class XlsxWrapper(File):
         if replace:
             self.drop_columns(drop_cols=[col1, col2])
 
+    def drop_rows(self, drop_index):
+        """ Drop rows based on drop_index. It removes
+        rows from instance that share the same index """
+        drop_type = type(drop_index)
+        if isinstance(drop_index, list) or isinstance(drop_index, int):
+            self.df.drop(drop_index, inplace=True)
+        else:
+            indexes_in_df = drop_index.isin(self.df.index.values).tolist()
+            if all(indexes_in_df):
+                self.df.drop(index=drop_index, axis=1, inplace=True)
+            else:
+                err_txt = "Cannot drop some the rows with these IDs:\n >> {ids} \
+                          \nThey are not in {file}"
+                err = err_txt.format(ids=drop_index.values, file=self.filename)
+                raise ValueError(err)
+
+    def drop_columns(self, mandatory_cols=None, drop_cols=None):
+        """ Drop columns. mandatory_cols and drop_cols
+        are mutually exclusive. It will drop any columns
+        specified in drop_cols. Alternatively, it will drop
+        any columns not in mandatory_cols."""
+        if drop_cols is not None:
+            pass
+        elif mandatory_cols is not None:
+            current_cols = set(self.current_columns())
+            mand_cols = set(mandatory_cols)
+            drop_cols = current_cols - mand_cols
+        self.df.drop(columns=drop_cols, axis=1, inplace=True)
+
+    def show(self, n=5):
+        """ Show dataframe contents. """
+        print(self.df.head(n))
+
+    def blank(self):
+        """ Returns True if dataframe is empty.
+        False otherwise """
+        return self.df.empty
+
+    def filter(self, values):
+        """ Returns a copy of dataframe
+        containing filtered values """
+        return self.df[values].copy()
+
+    def filter_by_index(self, id):
+        """ Return datarame when
+        filtering by index """
+        return self.df.loc[id]
+
+    def set_index_name(self, name):
+        """ Set index name"""
+        self.df.index.name = name
+
+    def apply(self, condition):
+        """ Apply a condition to a dataframe"""
+        return self.df.apply(condition, axis=1)
+
+    def get_attr(self, attribute):
+        """ Get attribute values from a dataframe"""
+        return getattr(self.df, attribute)
+
+    def set(self, attribute, values):
+        """ Set values to an attribute
+        within a dataframe """
+        self.df[attribute] = values
+
+    def update(self, new_df):
+        """ Update dataframe with data from
+        a new dataframe """
+        if self.blank():
+            self.df = new_df
+        else:
+            self.df.update(new_df)
+
+    def equal(self, new_df):
+        """ Return True if new_df is the same
+        dataframe as the class instance """
+        return self.df.equals(new_df)
+
     def index_values(self):
         for val in self.df.index:
             yield val
 
     def count_rows(self):
         return len(self.df.index)
+
+class XlsxWrapper(XlsxData):
+    """ A class for working with .xlsx files.
+    It stores data in pandas dataframe for data
+    manipulation and combines xlsxwriter for file I/O """
+
+    def __init__(self, filename=None, type='', df=None):
+        super().__init__(filename=filename, type=type, df=df)
 
 class Statements(XlsxWrapper):
     """ A class for working with bank statements """

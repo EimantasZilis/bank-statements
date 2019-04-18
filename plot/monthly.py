@@ -3,8 +3,8 @@ import matplotlib.cm as cm
 import numpy as np
 
 import stats
-import user_io
 import plot.generate as generate
+import file_management as fm
 
 TIMEFRAME = 'YearMonth'
 
@@ -45,11 +45,11 @@ def do_it(main_df):
 
         # Write data
         f.tight_layout()
-        filename = category + '.png'
-        filepath = user_io.directory(filename,'Pm')
+        image = fm.File(filename=category + '.png', type="P")
+        filepath = image.file_pointer()
         plt.savefig(filepath, bbox_inches='tight')
         print(' >>',filepath)
-    return
+        del image
 
 
 def subplot1(axis, data, category, xlabels):
