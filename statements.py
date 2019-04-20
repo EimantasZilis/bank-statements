@@ -21,7 +21,6 @@ def validate():
     remove_returns(raw_data)
     classify(raw_data)
     drop_blacklisted_transactions(raw_data)
-    add_date_cols(raw_data)
 
     if not raw_data.blank():
         raw_data.write_as(new_name="classified.xlsx", new_type="O")

@@ -304,10 +304,13 @@ class XlsxData(XlsxFile):
         False otherwise """
         return self.df.empty
 
-    def filter(self, values):
+    def filter(self, values, inplace=False):
         """ Returns a copy of dataframe
         containing filtered values """
-        return self.df[values].copy()
+        if inplace:
+            self.df = self.df[values]
+        else:
+            return self.df[values].copy()
 
     def filter_by_index(self, id):
         """ Return datarame when
