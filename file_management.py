@@ -170,8 +170,12 @@ class XlsxFile(File):
         """ Write dataframe to .xlsx file if it isn't None """
         if file_pointer is None:
             file_pointer = self.file_pointer()
-        writer = pd.ExcelWriter(file_pointer, engine="xlsxwriter")
+        writer = pd.ExcelWriter(file_pointer, engine="xlsxwriter",
+                                datetime_format='dd mmm yyyy')
         self.df.to_excel(writer, sheet_name=sheet)
+        worksheet = writer.sheets[sheet]
+        worksheet.autofilter(0, 0, 0, 4)
+        worksheet.freeze_panes(1, 0)
         writer.save()
 
     def write_as(self, new_name=None, new_type=None):
