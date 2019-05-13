@@ -25,8 +25,9 @@ This is currently hard coded in file_management.py File class.
 Change the directory to specify where files will be located.
 
 ##### Input files
-One input file is required:
+Two input files are required:
  - COMMON\Input\raw data.xlsx
+ - COMMON\Input\config.json
 
 raw.data.xlsx contains transaction data from bank statements.
 The first row contains the columns headings and it must contain
@@ -42,6 +43,33 @@ e.g. pre-categorised bank data.
 
 The dates in the spreadsheet must follow dd/mm/yyyy format.
 Amount column should only contain numeric values.
+
+config.json contains user configuration. At moment, it should
+only contain the list of categories.
+
+#### Configuration
+config.json in working directory is used for configuration.
+Options under "XLSX" > "STYLING" > "COLUMN" specify styles
+for columns in the spreadsheet.
+
+Each column has three options:
+ - width
+ - cell_format
+ - data_validation
+
+cell_format is used for defining visual appearance of columns.
+Cell methods and formats based on
+https://xlsxwriter.readthedocs.io/format.html can be applied
+against column ID in config.json.
+
+data_validation is used for constraining data formats for columns.
+The options for https://xlsxwriter.readthedocs.io/worksheet.html#data_validation can be defined against data_validation attribute against the column ID in config.json.
+
+"data_validation": {"validate": "list", source": "CATEGORIES"}
+is a special feature, where a dropdown will be a applied to each
+cell in a column. The available values to choose from will be
+taken from the list of defined categories against
+COMMON\Input\config.json.      
 
 #### 2. Usage
 ##### Classify transactions

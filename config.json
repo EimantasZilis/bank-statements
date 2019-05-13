@@ -1,0 +1,62 @@
+{    
+    "XLSX": {
+        "STYLING": {
+            "COLUMN": {
+                "ID": {
+                    "width": 8,
+                    "cell_format": {
+                        "bold": false,
+                        "right": true
+                    }
+                },
+                "Date": {
+                    "width": 15,
+                    "cell_format": {
+                        "right": true,
+                        "left": true
+                     }
+                },
+                "Info": {
+                    "width": 100,
+                    "cell_format": {
+                        "right": true,
+                        "left": true
+                    }
+                },
+                "Amount": {
+                    "width": 12,
+                    "cell_format": {
+                        "num_format": 44,
+                        "right": true,
+                        "left": true
+                    },
+                    "data_validation": {
+                        "validate": "decimal",
+                        "criteria": "between",
+                        "minimum": -100000000000.00,
+                        "maximum": 100000000000.00
+                    }
+                },   
+                "Type": {
+                    "width": 15,
+                    "cell_format": {
+                        "right": true,
+                        "left": true
+                    },
+                    "data_validation": {
+                        "validate": "list",
+                        "source": "CATEGORIES"
+                    }
+                }       
+            },
+            "HEADER": {
+                    "bold": true,
+                    "text_wrap": true,
+                    "valign": "top",
+                    "fg_color": "#ebf1de",
+                    "font_color": "#0d0d0d",
+                    "border": 1
+            }
+        }
+    }  
+}

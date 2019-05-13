@@ -3,6 +3,7 @@ import file_management as fm
 
 raw_data = fm.XlsxWrapper("raw data.xlsx", "I")
 raw_data.initialise()
+user_config = fm.JsonWrapper("config.json", "I")
 categories = fm.JsonWrapper("categories.json", "I")
 classified = fm.Statements("classified.xlsx", "O")
 unclassified = fm.Statements("unclassified.xlsx", "O")
@@ -22,7 +23,7 @@ def validate():
     classify(raw_data)
     drop_blacklisted_transactions(raw_data)
 
-    if not raw_data.blank():
+    if not raw_data.is_blank():
         raw_data.write_as(new_name="classified.xlsx", new_type="O")
 
     blank_types = raw_data.get_attr("Type") == ""
@@ -39,7 +40,8 @@ def add_info_column(raw_data):
 def classify(raw_data):
     """ Classify transactions and assign their
     type to a new "Type" column. """
-    types = raw_data.get_attr("Info").apply(lambda x: categories.lookup(x, ""))
+    types = raw_data.get_attr("Info").apply(
+        lambda x: categories.lookup(x, default=""))
     raw_data.set("Type", types)
 
 def drop_blacklisted_transactions(df):
@@ -79,7 +81,7 @@ def remove_returns(raw_data):
             buy_id = expenses.Delta.idxmin(axis=0)
             raw_data.drop_rows([buy_id, return_id])
 
-    if not returns.blank():
+    if not returns.is_blank():
         returns.write()
 
 def add_date_cols(raw_data):
@@ -132,7 +134,7 @@ def import_raw_data():
 def process_unclassified_data():
     """ Check for any manually classified transactions in
     unclassified.xlsx and update classified.xlsx lines. """
-    if not unclassified.blank():
+    if not unclassified.is_blank():
         newly_classified = unclassified.df.dropna(axis=0, subset=['Type'])
 
         new_count = len(newly_classified.index)

@@ -7,12 +7,20 @@ class File:
     common_path = r"C:\Users\Eimantas\Dropbox\finances"
     types = {'I': "Input", 'O': "Output", "P": "Plot"}
 
-    def __init__(self, filename=None, type=''):
-        self.filename = ''
+    def __init__(self, filename=None, type='', source_file=False):
+        self.source_file = source_file
+        self.filename = filename
         self.subfolders = ''
-        self.type = ''
-        self.parse_inputs(filename, type)
-        self.init_dirs()
+        self.type = type
+        self.init_file()
+
+    def init_file(self):
+        """ Initialise file if filename is specified
+        and parse it into filename, subfolders and type.
+        It also creates relevant directories if required. """
+        if self.filename is not None:
+            self.parse_inputs(self.filename, self.type)
+            self.init_dirs()
 
     def get_type_name(self):
         """ Return type name based on code. """
@@ -21,20 +29,27 @@ class File:
     def parse_inputs(self, filename, type_code):
         """ Process filename and type_code. It parses
         the data into filename, subfolders and type """
-        if self.filename is None:
-            raise ValueError("Unspecified Filename")
-        else:
-            self.subfolders, self.filename = os.path.split(filename)
-            self.type = File.types.get(type_code, "")
+        self.subfolders, self.filename = os.path.split(filename)
+        self.type = File.types.get(type_code, "")
 
     def init_dirs(self):
         """ Initialise relevant directories """
         fp = self.file_pointer(with_file=False)
         os.makedirs(fp, exist_ok=True)
 
+    def base_path(self):
+        """ Return base path for the output depending on
+        whether this is a file used by the source code or
+        a file amendable/viewable by the user. """
+        if self.source_file:
+            return os.getcwd()
+        else:
+            return File.common_path
+
     def file_pointer(self, with_file=True):
         """ Return full file pointer to the file """
-        fp =  os.path.join(File.common_path, self.type, self.subfolders)
+        base = self.base_path()
+        fp =  os.path.join(base, self.type, self.subfolders)
         if with_file:
             fp = os.path.join(fp, self.filename)
         return fp
@@ -42,7 +57,10 @@ class File:
     def delete_file(self):
         """ Delete file """
         fp = self.file_pointer()
-        os.remove(fp)
+        try:
+            os.remove(fp)
+        except FileNotFoundError:
+            pass
 
     def rename(self, new_name=None, new_type=None):
         """ Change file name and type"""
@@ -54,15 +72,18 @@ class File:
 class JsonWrapper(File):
     """ Class for manipulating JSON files """
 
-    def __init__(self, Filename=None, Type=''):
-        super().__init__(filename=Filename, type=Type)
-        self.dict = None
+    def __init__(self, Filename=None, Type='', dict=None, Source_file=False):
+        super().__init__(filename=Filename, type=Type, source_file=Source_file)
+        self.dict = dict
         self.read()
 
     def read(self):
-        """ Read categories from .json file.
-        Set up empty dictionary if file does
-        not exist. """
+        """ Read categories from .json file. Set up empty
+        dictionary if file does not exist. Don't read if
+        dict attribute is not None or if the filename is
+        not specified. """
+        if self.dict is not None or self.filename is None:
+            return
         try:
             fp = self.file_pointer()
             with open(fp, "r") as file:
@@ -91,12 +112,22 @@ class JsonWrapper(File):
         else:
             self.dict[id] = [current_values, value]
 
+    def is_blank(self):
+        """ Returns True if dict attribute is None"""
+        return self.dict == None
+
     def show(self):
         """ Print the contents of categories dictionary.
         It will show each category and its keywords in
-        XXXXX | ['YYYYY', 'ZZZZZ', ...] format.
-        It adds padding at the end to each XXXXX in
-        order to make the bars align for all categories. """
+        XXXXX | ['YYYYY', 'ZZZZZ', ...] format. It adds
+        padding at the end to each XXXXX in order to
+        make the bars align for all categories. It
+        prints None if dict attribute is None """
+
+        if self.dict is None:
+            print(None,"\n")
+            return
+
         max_length = 0
         for id in self.dict.keys():
             if max_length < len(id):
@@ -106,9 +137,28 @@ class JsonWrapper(File):
             print(padded_id, ' | ', val)
         print('\n')
 
-    def lookup(self, key, not_found_val=None):
-        """ Look up a value in dictionary """
-        return self.dict.get(key, not_found_val)
+    def lookup(self, *keys, default=None):
+        """ Look up a value in dictionary based on key.
+        By providing multiple keys, it will get the values
+        from nested dictionaries. If there are no nested
+        dictionaries or the value against the key is not
+        present, it will return the value specified in
+        default.
+        If a tuple is passed in via keys[0], it will
+        iterate through it rather than keys as a whole."""
+
+        if isinstance(keys[0], tuple) or isinstance(keys[0], list):
+            if len(keys) == 1 and len(keys[0]) > 1 :
+                # Iterable variable was passed in.
+                # Iterate through it instead rather than keys
+                keys = keys[0]
+
+        new_level = self.dict
+        for key in keys:
+            if not isinstance(new_level, dict):
+                return default
+            new_level = new_level.get(key, default)
+        return new_level
 
     def transpose(self):
         """ Swap key-value pairs in self.dict.
@@ -172,10 +222,11 @@ class XlsxFile(File):
             file_pointer = self.file_pointer()
         writer = pd.ExcelWriter(file_pointer, engine="xlsxwriter",
                                 datetime_format='dd mmm yyyy')
-        self.df.to_excel(writer, sheet_name=sheet)
+        temp_df = self.df.reset_index()
+        temp_df.to_excel(writer, sheet_name=sheet,header=False, index=False)
         worksheet = writer.sheets[sheet]
-        worksheet.autofilter(0, 0, 0, 4)
-        worksheet.freeze_panes(1, 0)
+        workbook = writer.book
+        self.apply_styles(temp_df, worksheet, workbook)
         writer.save()
 
     def write_as(self, new_name=None, new_type=None):
@@ -208,6 +259,57 @@ class XlsxFile(File):
         Read the file and validate it. """
         self.read()
         self.validate(mand_cols)
+
+    def apply_styles(self, df, wsheet, wbook):
+        """ Apply styles to xlsx spreadsheet. """
+        wsheet.autofilter(0, 0, 0, len(df.columns)-1)
+        wsheet.freeze_panes(1, 0)
+        config = JsonWrapper("config.json", Source_file=True)
+        self.apply_header_styles(df, config, wsheet, wbook)
+        self.apply_column_styles(df, config, wsheet, wbook)
+        self.apply_data_validation(df, config, wsheet)
+
+    def apply_data_validation(self, df, config, wsheet):
+        """ Applies data validation to cell based on config.json.
+        It checks "source" tag for "CATEGORIES" string. It will
+        replace it with the list of categories if it finds one """
+
+        user_config = JsonWrapper("config.json", Type="I")
+        categories = user_config.lookup("CATEGORIES")
+        lookup_dropdown = ["XLSX", "STYLING", "COLUMN"]
+
+        for col_num, name in enumerate(df.columns.values):
+            do_lookup = list(lookup_dropdown)
+            do_lookup.extend([name, "data_validation"])
+            data_val = JsonWrapper(dict=config.lookup(do_lookup))
+            if data_val.is_blank():
+                continue
+            elif data_val.lookup("source") == "CATEGORIES":
+                data_val.update("source", categories)
+
+            wsheet.data_validation(first_row=1, first_col=col_num,
+                                   last_row=len(df.index), last_col=col_num,
+                                   options=data_val.dict)
+
+    def apply_column_styles(self, df, config, wsheet, wbook):
+        """ Apply column styles based on config.json. """
+        col_styles = config.lookup("XLSX", "STYLING", "COLUMN", default={})
+        for col_num, name in enumerate(df.columns.values):
+            col_opts = col_styles.get(name)
+            width = float(col_opts.get("width", 20))
+            cell_format = col_opts.get("cell_format", {})
+            col_format = wbook.add_format(cell_format)
+            wsheet.set_column(first_col=col_num, last_col=col_num,
+                              width=width, cell_format=col_format)
+
+    def apply_header_styles(self, df, config, wsheet, wbook):
+        """ Apply header style based on config.json. It will apply
+        default configuration if it is not specified. """
+        dheader = {"bold": True, "text_wrap": True, "valign": "top", "border": 1}
+        header_style = config.lookup("XLSX", "STYLING", "HEADER", default=dheader)
+        header_format = wbook.add_format(header_style)
+        for col_num, name in enumerate(df.columns.values):
+            wsheet.write(0, col_num, name, header_format)
 
 class XlsxData(XlsxFile):
     """ A class for working with Xlsx file data """
@@ -303,7 +405,7 @@ class XlsxData(XlsxFile):
         """ Show dataframe contents. """
         print(self.df.head(n))
 
-    def blank(self):
+    def is_blank(self):
         """ Returns True if dataframe is empty.
         False otherwise """
         return self.df.empty
@@ -341,7 +443,7 @@ class XlsxData(XlsxFile):
     def update(self, new_df):
         """ Update dataframe with data from
         a new dataframe """
-        if self.blank():
+        if self.is_blank():
             self.df = new_df
         else:
             self.df.update(new_df)
