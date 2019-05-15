@@ -1,12 +1,22 @@
 from pandas.api.types import is_numeric_dtype
 import file_management as fm
 
+""" Process and validate data from raw data.xlsx.
+Convert it into useable format by merging description
+and extra columns into info, removing blacklisted
+transactions and classifying data where possible. """
+
+categories = fm.JsonWrapper("categories.json", "I")
 raw_data = fm.XlsxWrapper("raw data.xlsx", "I")
 raw_data.initialise()
-user_config = fm.JsonWrapper("config.json", "I")
-categories = fm.JsonWrapper("categories.json", "I")
-classified = fm.Statements("classified.xlsx", "O")
-unclassified = fm.Statements("unclassified.xlsx", "O")
+
+def migrate():
+    """ Import data from raw_data.xlsx, tidy it up
+    and classify transactions based on the known,
+    classified transactions """
+    mand_columns = ['Date', 'Description', 'Extra', 'Amount']
+    raw_data.drop_columns(mand_columns)
+    validate()
 
 def validate():
     """ Validate and clean input data, remove expense-return
@@ -27,10 +37,20 @@ def validate():
         raw_data.write_as(new_name="classified.xlsx", new_type="O")
 
     blank_types = raw_data.get_attr("Type") == ""
+    show_summary(raw_data, blank_types)
     if blank_types.any():
         classified_index = raw_data.filter(~blank_types).index.values.tolist()
         raw_data.drop_rows(classified_index)
         raw_data.write_as(new_name="unclassified.xlsx", new_type="O")
+
+def show_summary(raw_data, blank_types):
+    """ Print the number of unclassified and
+    classified transactions found """
+    total_count = raw_data.count_rows()
+    classified_count = len(raw_data.filter(~blank_types).index)
+    unclassified_count = total_count - classified_count
+    info = " >> Classified: {c}/{t}\n >> Unclassified: {u}/{t}"
+    print(info.format(c=classified_count, t=total_count, u=unclassified_count))
 
 def add_info_column(raw_data):
     raw_data.get_attr("Description").fillna("", inplace=True)
@@ -83,67 +103,3 @@ def remove_returns(raw_data):
 
     if not returns.is_blank():
         returns.write()
-
-def add_date_cols(raw_data):
-    """ Add extra columns to the dataframe:
-    Week (of the year), YearMonth (Month and year), Year and delta
-    (difference between days compared to the earliest one) """
-
-    date_col = raw_data.get_attr("Date")
-    min_date = date_col.min()
-    raw_data.set("delta", date_col.map(lambda dt: (dt-min_date).days))
-    raw_data.set("Week", date_col.map(lambda dt: dt.isocalendar()[1]))
-    raw_data.set("YearMonth", date_col.map(lambda dt: dt.replace(day=1)))
-    raw_data.set("Year", date_col.map(lambda dt: dt.replace(month=1,day=1)))
-
-def update_classified_data(newly_classified):
-    """ Update classified data with newly_classified """
-    print(" >> Updating classified data")
-    classified.update(newly_classified)
-    classified.write()
-
-def update_unclassified_data(newly_classified):
-    """ Amend or remove unclassified data """
-    print(" >> Updating unclassified data")
-    if unclassified.equal(newly_classified):
-        unclassified.delete_file()
-    else:
-        unclassified.drop_rows(newly_classified.index)
-        unclassified.write()
-
-def update_categories_dict(newly_classified):
-    """ Update categories dictionary with new classifications """
-    print(" >> Updating classifications")
-    for id in newly_classified.index:
-        line = newly_classified.loc[id]
-        categories.update(line.Info, line.Type)
-    categories.write()
-
-def get_classified_data():
-    """ Get classified data """
-    return classified
-
-def import_raw_data():
-    """ Import data f   rom raw_data.xlsx, tidy it up
-    and classify transactions based on the known,
-    classified transactions """
-    mand_columns = ['Date', 'Description', 'Extra', 'Amount']
-    raw_data.drop_columns(mand_columns)
-    validate()
-
-def process_unclassified_data():
-    """ Check for any manually classified transactions in
-    unclassified.xlsx and update classified.xlsx lines. """
-    if not unclassified.is_blank():
-        newly_classified = unclassified.df.dropna(axis=0, subset=['Type'])
-
-        new_count = len(newly_classified.index)
-        total_count = unclassified.count_rows()
-        info = "{c} / {t} classified in unclassified.xlsx"
-        print(info.format(c=new_count, t=total_count))
-
-        if not newly_classified.empty:
-            print("Processing unclassified data...")
-            update_classified_data(newly_classified)
-            update_unclassified_data(newly_classified)
-            update_categories_dict(newly_classified)

@@ -223,7 +223,9 @@ class XlsxFile(File):
         writer = pd.ExcelWriter(file_pointer, engine="xlsxwriter",
                                 datetime_format='dd mmm yyyy')
         temp_df = self.df.reset_index()
-        temp_df.to_excel(writer, sheet_name=sheet,header=False, index=False)
+        temp_df.to_excel(writer, sheet_name=sheet,header=False,
+                         index=False, startrow=1)
+
         worksheet = writer.sheets[sheet]
         workbook = writer.book
         self.apply_styles(temp_df, worksheet, workbook)

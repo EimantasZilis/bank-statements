@@ -1,19 +1,15 @@
-import statements
-import plot.monthly
-import plot.summary
+import user_input
 
 def main():
-    statements.process_unclassified_data()
-    statements.import_raw_data()
-    classified = statements.get_classified_data()
+    command = user_input.init()
+    if command.classify:
+        user_input.classify_data()
 
-    # Remove unclassified data for plotting purposes
-    unclassified = classified.get_attr("Type").isna()
-    classified.filter(~unclassified, inplace=True)
-    statements.add_date_cols(classified)
+    if command.migrate:
+        user_input.import_data()
 
-    plot.monthly.do_it(classified.df)
-    plot.summary.do_it(classified.df)
+    if command.plot:
+        user_input.plot_data()
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,11 @@
+- Initialise the project
+    - Initialise files
+    - Make common file configurable
+    - Make BLACKLIST to be a list of types
+
+- Write unit tests
+- Refactor plotting s/w
+- Develop dash-based front end
+    - Research how plotly works
+    - Develop generic framework to be used with plotly
+    - Write s/w
