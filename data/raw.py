@@ -6,19 +6,17 @@ Convert it into useable format by merging description
 and extra columns into info, removing blacklisted
 transactions and classifying data where possible. """
 
-categories = fm.JsonWrapper("categories.json", "I")
-raw_data = fm.XlsxWrapper("raw data.xlsx", "I")
-raw_data.initialise()
-
 def migrate():
     """ Import data from raw_data.xlsx, tidy it up
     and classify transactions based on the known,
     classified transactions """
+    raw_data = fm.XlsxWrapper("raw data.xlsx", "I")
+    raw_data.initialise()
     mand_columns = ['Date', 'Description', 'Extra', 'Amount']
     raw_data.drop_columns(mand_columns)
-    validate()
+    validate(raw_data)
 
-def validate():
+def validate(raw_data):
     """ Validate and clean input data, remove expense-return
     transaction pairs and classify each transaction. """
 
@@ -60,11 +58,12 @@ def add_info_column(raw_data):
 def classify(raw_data):
     """ Classify transactions and assign their
     type to a new "Type" column. """
+    categories = fm.JsonWrapper("categories.json", "I")
     types = raw_data.get_attr("Info").apply(
         lambda x: categories.lookup(x, default=""))
     raw_data.set("Type", types)
 
-def drop_blacklisted_transactions(df):
+def drop_blacklisted_transactions(raw_data):
     """ Remove transactions that have type 'BLACKLIST' """
     black = raw_data.get_attr("Type") == "BLACKLIST"
     black_index = raw_data.filter(black).index

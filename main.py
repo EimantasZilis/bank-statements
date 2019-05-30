@@ -1,15 +1,8 @@
-import user_input
+import user_input.parser as parser
 
 def main():
-    command = user_input.init()
-    if command.classify:
-        user_input.classify_data()
-
-    if command.migrate:
-        user_input.import_data()
-
-    if command.plot:
-        user_input.plot_data()
-
+    cmd = parser.init_parser()
+    parser.process_commands(cmd)
+    
 if __name__ == "__main__":
     main()

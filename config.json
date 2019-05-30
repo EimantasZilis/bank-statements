@@ -1,62 +1,90 @@
-{    
+{
+    "CATEGORIES": [
+        "BLACKLIST",
+        "Clothes",
+        "Eating out",
+        "Entertainment",
+        "Groceries",
+        "Health",
+        "Holidays",
+        "Home",
+        "Other",
+        "Travel"
+    ],
+    "COMMON_PATH": "C:\\Users\\Eimantas\\Dropbox\\finances",
     "XLSX": {
         "STYLING": {
             "COLUMN": {
+                "Amount": {
+                    "cell_format": {
+                        "left": true,
+                        "num_format": 44,
+                        "right": true
+                    },
+                    "data_validation": {
+                        "criteria": "between",
+                        "maximum": 100000000000.0,
+                        "minimum": -100000000000.0,
+                        "validate": "decimal"
+                    },
+                    "width": 12
+                },
+                "Date": {
+                    "cell_format": {
+                        "left": true,
+                        "num_format": "d mmm yyyy",
+                        "right": true
+                    },
+                    "width": 15
+                },
+                "Description": {
+                    "cell_format": {
+                        "left": true,
+                        "right": true
+                    },
+                    "width": 70
+                },
+                "Extra": {
+                    "cell_format": {
+                        "left": true,
+                        "right": true
+                    },
+                    "width": 70
+                },
                 "ID": {
-                    "width": 8,
                     "cell_format": {
                         "bold": false,
                         "right": true
-                    }
-                },
-                "Date": {
-                    "width": 15,
-                    "cell_format": {
-                        "right": true,
-                        "left": true
-                     }
+                    },
+                    "width": 8
                 },
                 "Info": {
-                    "width": 100,
                     "cell_format": {
-                        "right": true,
-                        "left": true
-                    }
+                        "left": true,
+                        "right": true
+                    },
+                    "width": 100
                 },
-                "Amount": {
-                    "width": 12,
-                    "cell_format": {
-                        "num_format": 44,
-                        "right": true,
-                        "left": true
-                    },
-                    "data_validation": {
-                        "validate": "decimal",
-                        "criteria": "between",
-                        "minimum": -100000000000.00,
-                        "maximum": 100000000000.00
-                    }
-                },   
                 "Type": {
-                    "width": 15,
                     "cell_format": {
-                        "right": true,
-                        "left": true
+                        "left": true,
+                        "right": true
                     },
                     "data_validation": {
-                        "validate": "list",
-                        "source": "CATEGORIES"
-                    }
-                }       
+                        "source": "CATEGORIES",
+                        "validate": "list"
+                    },
+                    "width": 15
+                }
             },
             "HEADER": {
-                    "bold": true,
-                    "text_wrap": true,
-                    "valign": "top",
-                    "fg_color": "#ebf1de",
-                    "font_color": "#0d0d0d",
-                    "border": 1
+                "bold": true,
+                "border": 1,
+                "fg_color": "#fdfdfd",
+                "font_color": "#1d1b10",
+                "text_wrap": true,
+                "valign": "top"
             }
         }
-    }  
+    }
 }

@@ -1,6 +1,8 @@
 - Initialise the project
-    - Initialise files
-    - Make common file configurable
+    - Create new system folder containing file management and system files.
+    - Change categories.json from being a user to a system file.
+    - update readme
+    - Initialise files once and make it accessible across the app
     - Make BLACKLIST to be a list of types
 
 - Write unit tests

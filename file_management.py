@@ -4,7 +4,6 @@ import pandas as pd
 
 class File:
     """ Class for initialising and handling user files """
-    common_path = r"C:\Users\Eimantas\Dropbox\finances"
     types = {'I': "Input", 'O': "Output", "P": "Plot"}
 
     def __init__(self, filename=None, type='', source_file=False):
@@ -44,7 +43,8 @@ class File:
         if self.source_file:
             return os.getcwd()
         else:
-            return File.common_path
+            config = JsonWrapper(Filename="config.json", Source_file=True)
+            return config.lookup("COMMON_PATH")
 
     def file_pointer(self, with_file=True):
         """ Return full file pointer to the file """
@@ -69,6 +69,21 @@ class File:
         if new_type is not None:
             self.type = File.types.get(new_type, "")
 
+    def file_exists(self, fp=None):
+        """ Check if file exists. Returns True/False."""
+        if fp is None:
+            fp = self.file_pointer()
+        return os.path.isfile(fp)
+
+    def overwrite_check(self, fp):
+        """ Raise IOError exception if the file already
+        exists. It can be used as a check before the file
+        is created."""
+        if self.file_exists(fp):
+            filename = os.path.basename(fp)
+            error = " >> {} already exists. File was not overwritten."
+            raise IOError(error.format(filename))
+
 class JsonWrapper(File):
     """ Class for manipulating JSON files """
 
@@ -91,7 +106,7 @@ class JsonWrapper(File):
         except FileNotFoundError:
             self.dict = {}
 
-    def write(self, filename=None):
+    def write(self):
         """ Write categories to .json file. """
         fp = self.file_pointer()
         with open(fp, "w+") as file:
@@ -112,30 +127,44 @@ class JsonWrapper(File):
         else:
             self.dict[id] = [current_values, value]
 
+    def extend(self, id, value):
+        """ Extends the list and add a value keyed on id. """
+        current_values = self.dict.get(id, None)
+        if current_values is None:
+            self.dict[id] = value
+        elif isinstance(current_values, list):
+            self.dict[id].extend(value)
+        else:
+            self.dict[id] = [current_values, value]
+
     def is_blank(self):
         """ Returns True if dict attribute is None"""
         return self.dict == None
 
-    def show(self):
+    def show(self, pad='', level=None):
         """ Print the contents of categories dictionary.
         It will show each category and its keywords in
-        XXXXX | ['YYYYY', 'ZZZZZ', ...] format. It adds
-        padding at the end to each XXXXX in order to
-        make the bars align for all categories. It
+        pad XXXXX | ['YYYYY', 'ZZZZZ', ...] format. It
+        adds padding at the end to each XXXXX in order
+        to make the bars align for all categories. It
         prints None if dict attribute is None """
 
-        if self.dict is None:
-            print(None,"\n")
+        if level is None:
+            use_dict = self.dict
+        else:
+            use_dict = self.lookup(level)
+
+        if use_dict is None:
+            print(pad, None, " | ",  None)
             return
 
         max_length = 0
-        for id in self.dict.keys():
+        for id in use_dict.keys():
             if max_length < len(id):
                 max_length = len(id)
-        for id, val in self.dict.items():
-            padded_id = id + (max_length - len(id))*' '
+        for id, val in use_dict.items():
+            padded_id = pad + id + (max_length - len(id))*' '
             print(padded_id, ' | ', val)
-        print('\n')
 
     def lookup(self, *keys, default=None):
         """ Look up a value in dictionary based on key.
@@ -146,7 +175,6 @@ class JsonWrapper(File):
         default.
         If a tuple is passed in via keys[0], it will
         iterate through it rather than keys as a whole."""
-
         if isinstance(keys[0], tuple) or isinstance(keys[0], list):
             if len(keys) == 1 and len(keys[0]) > 1 :
                 # Iterable variable was passed in.
@@ -197,6 +225,16 @@ class JsonWrapper(File):
                     self.dict[value].append(id)
                     frequencies[value] += 1
 
+    def pop(self, key, default=None):
+        """ Delete key from dictionary """
+        self.dict.pop(key, default)
+
+    def keys(self):
+        return self.dict.keys()
+
+    def items(self):
+        return self.dict.items()
+
 class XlsxFile(File):
     """ A class for manipulating Xlsx file properties and layout """
     mandatory_columns = ("Date", "Amount")
@@ -216,13 +254,23 @@ class XlsxFile(File):
             cols = {col: [] for col in XlsxFile.mandatory_columns}
             self.df = pd.DataFrame(cols)
 
-    def write(self, sheet="Sheet1", file_pointer=None):
+    def write_validation(self, file_pointer=None, overwrite_check=False):
+        """ Do validation prior to writing the file. Throw
+        exceptions if it fails any validations """
+        if overwrite_check:
+            # Throw exception if file already exists.
+            self.overwrite_check(file_pointer)
+
+    def write(self, sheet="Sheet1", file_pointer=None, overwrite_check=False):
         """ Write dataframe to .xlsx file if it isn't None """
         if file_pointer is None:
+            # Get default file pointer if it isn't specified
             file_pointer = self.file_pointer()
+
+        self.write_validation(file_pointer, overwrite_check)
         writer = pd.ExcelWriter(file_pointer, engine="xlsxwriter",
                                 datetime_format='dd mmm yyyy')
-        temp_df = self.df.reset_index()
+        temp_df = self.reset_index(self.df)
         temp_df.to_excel(writer, sheet_name=sheet,header=False,
                          index=False, startrow=1)
 
@@ -276,8 +324,7 @@ class XlsxFile(File):
         It checks "source" tag for "CATEGORIES" string. It will
         replace it with the list of categories if it finds one """
 
-        user_config = JsonWrapper("config.json", Type="I")
-        categories = user_config.lookup("CATEGORIES")
+        categories = config.lookup("CATEGORIES")
         lookup_dropdown = ["XLSX", "STYLING", "COLUMN"]
 
         for col_num, name in enumerate(df.columns.values):
@@ -290,7 +337,7 @@ class XlsxFile(File):
                 data_val.update("source", categories)
 
             wsheet.data_validation(first_row=1, first_col=col_num,
-                                   last_row=len(df.index), last_col=col_num,
+                                   last_row=1000000, last_col=col_num,
                                    options=data_val.dict)
 
     def apply_column_styles(self, df, config, wsheet, wbook):
@@ -298,6 +345,9 @@ class XlsxFile(File):
         col_styles = config.lookup("XLSX", "STYLING", "COLUMN", default={})
         for col_num, name in enumerate(df.columns.values):
             col_opts = col_styles.get(name)
+            if col_opts is None:
+                # Skip column if configuration not implemented
+                continue
             width = float(col_opts.get("width", 20))
             cell_format = col_opts.get("cell_format", {})
             col_format = wbook.add_format(cell_format)
@@ -312,6 +362,16 @@ class XlsxFile(File):
         header_format = wbook.add_format(header_style)
         for col_num, name in enumerate(df.columns.values):
             wsheet.write(0, col_num, name, header_format)
+
+    def reset_index(self, df=None):
+        """ Reset index for an input dataframe. It is
+        only does it if index.name is specified """
+        if df is None:
+            return None
+        elif df.index.name is not None:
+            return df.reset_index()
+        else:
+            return df
 
 class XlsxData(XlsxFile):
     """ A class for working with Xlsx file data """
@@ -483,7 +543,7 @@ class Statements(XlsxWrapper):
         """ Read the .xlsx file. If the dataframe is not
         initialised, it will read the dataframe from file
         and add mandatory columns. """
-        if self.df is None:
+        if self.df is None and self.filename is not None:
             super().read(sheet=Sheet)
             current_columns = self.df.columns.values.tolist()
             for col in Statements.mandatory_columns:
@@ -497,3 +557,29 @@ class Statements(XlsxWrapper):
             mand_cols = Statements.mandatory_columns
         super().validate(mand_cols)
         self.df.set_index("ID", inplace=True)
+
+    def select_by(self, column, value=None, statement=True):
+        """ Select transactions by a given column and value.
+        It raises ValueError exception if a column is not in
+        a statement. It will return a Statements object if
+        statement is set to True and Pandas dataframe object
+        otherwise"""
+        if column not in self.df.columns.values:
+            error = "{c} column not in {f}".format(c=column, f=self.filename)
+            raise ValueError(error)
+
+        get_results = self.get_attr(column) == value
+        selection = self.filter(get_results)
+        if statement:
+            return Statements(df=selection.reset_index())
+        else:
+            return selection
+
+def path_exists_or_is_creatable(path):
+    """ Check if path exists of is creatable"""
+    if not isinstance(path, str) or not path:
+        return False
+    try:
+        return os.path.exists(path) or os.access(os.path.dirname(path), os.W_OK)
+    except OSError:
+        return False
