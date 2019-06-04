@@ -3,9 +3,9 @@ import matplotlib.cm as cm
 import pandas as pd
 import numpy as np
 
-import stats
+import plot.stats as stats
 import plot.generate as generate
-import file_management as fm
+import system.file_management as fm
 
 TIMEFRAME = 'Year'
 

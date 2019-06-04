@@ -4,10 +4,10 @@ import pandas as pd
 
 class File:
     """ Class for initialising and handling user files """
-    types = {'I': "Input", 'O': "Output", "P": "Plot"}
+    types = {'D': "Data", "P": "Plot"}
 
-    def __init__(self, filename=None, type='', source_file=False):
-        self.source_file = source_file
+    def __init__(self, filename=None, type='', system_file=False):
+        self.system_file = system_file
         self.filename = filename
         self.subfolders = ''
         self.type = type
@@ -40,10 +40,10 @@ class File:
         """ Return base path for the output depending on
         whether this is a file used by the source code or
         a file amendable/viewable by the user. """
-        if self.source_file:
-            return os.getcwd()
+        if self.system_file:
+            return os.path.join(os.getcwd(), "system", "configuration")
         else:
-            config = JsonWrapper(Filename="config.json", Source_file=True)
+            config = JsonWrapper(Filename="config.json", system_file=True)
             return config.lookup("COMMON_PATH")
 
     def file_pointer(self, with_file=True):
@@ -87,8 +87,8 @@ class File:
 class JsonWrapper(File):
     """ Class for manipulating JSON files """
 
-    def __init__(self, Filename=None, Type='', dict=None, Source_file=False):
-        super().__init__(filename=Filename, type=Type, source_file=Source_file)
+    def __init__(self, Filename=None, Type='', dict=None, system_file=False):
+        super().__init__(filename=Filename, type=Type, system_file=system_file)
         self.dict = dict
         self.read()
 
@@ -314,7 +314,7 @@ class XlsxFile(File):
         """ Apply styles to xlsx spreadsheet. """
         wsheet.autofilter(0, 0, 0, len(df.columns)-1)
         wsheet.freeze_panes(1, 0)
-        config = JsonWrapper("config.json", Source_file=True)
+        config = JsonWrapper("config.json", system_file=True)
         self.apply_header_styles(df, config, wsheet, wbook)
         self.apply_column_styles(df, config, wsheet, wbook)
         self.apply_data_validation(df, config, wsheet)
@@ -527,14 +527,14 @@ class XlsxWrapper(XlsxData):
     It stores data in pandas dataframe for data
     manipulation and combines xlsxwriter for file I/O """
 
-    def __init__(self, filename=None, type='', df=None):
+    def __init__(self, filename=None, type='D', df=None):
         super().__init__(filename=filename, type=type, df=df)
 
 class Statements(XlsxWrapper):
     """ A class for working with bank statements """
     mandatory_columns = ("ID", "Type")
 
-    def __init__(self, filename=None, type='', df=None):
+    def __init__(self, filename=None, type='D', df=None):
         super().__init__(filename=filename, type=type, df=df)
         self.read()
         self.validate()

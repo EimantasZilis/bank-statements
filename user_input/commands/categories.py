@@ -1,6 +1,5 @@
 import sys
-import data.select
-import file_management as fm
+import system.file_management as fm
 from user_input.commands.info import show_categories_summary
 from user_input.commands.info import get_categories_summary
 from user_input.commands.data import migrate as reprocess_raw_data
@@ -123,7 +122,7 @@ class Delete(AmendCategories):
     def delete_references_to_categories(self):
         """ Delete any references to categories
         from categories.json """
-        categories_config = fm.JsonWrapper("categories.json", "I")
+        categories_config = fm.JsonWrapper("categories.json", system_file=True)
         categories_config.transpose()
         for category in self.action_categories:
             categories_config.pop(category)

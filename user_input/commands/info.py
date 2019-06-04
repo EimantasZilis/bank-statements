@@ -1,5 +1,5 @@
-from file_management import JsonWrapper as jdict
-from file_management import Statements
+from system.file_management import JsonWrapper as jdict
+from system.file_management import Statements
 
 def process(commands=None, config=None):
     """ Run commands for 'info' subparser """
@@ -30,7 +30,7 @@ def show_categories_summary(config):
 
 def get_unclassified_count():
     """ Get a number of unclassified transactions"""
-    classified = Statements("unclassified.xlsx", "O")
+    classified = Statements("unclassified.xlsx")
     return classified.count_rows()
 
 def show_unclassified_summary():
@@ -42,7 +42,7 @@ def get_categories_summary(config):
     """ Gets information about defined categories.
     Shows their names and a number of transactions
     used with each one """
-    classified = Statements("classified.xlsx", "O")
+    classified = Statements("classified.xlsx")
     categories = config.lookup("CATEGORIES")
     cat_count = {k:0 for k in categories}
     cat_info = jdict(dict=cat_count)

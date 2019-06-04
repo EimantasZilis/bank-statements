@@ -1,17 +1,7 @@
 {
     "CATEGORIES": [
-        "BLACKLIST",
-        "Clothes",
-        "Eating out",
-        "Entertainment",
-        "Groceries",
-        "Health",
-        "Holidays",
-        "Home",
-        "Other",
-        "Travel"
     ],
-    "COMMON_PATH": "C:\\Users\\Eimantas\\Dropbox\\finances",
+    "COMMON_PATH": "",
     "XLSX": {
         "STYLING": {
             "COLUMN": {

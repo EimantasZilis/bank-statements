@@ -1,11 +1,12 @@
 - Initialise the project
-    - Create new system folder containing file management and system files.
-    - Change categories.json from being a user to a system file.
+    - Add parameter to specify if files can be written in file_management
     - update readme
+        - Include requirements
+        - Add up to date functionality description
     - Initialise files once and make it accessible across the app
     - Make BLACKLIST to be a list of types
 
-- Write unit tests
+- Write unit tests for all existing functionality (and use TDD going forward)
 - Refactor plotting s/w
 - Develop dash-based front end
     - Research how plotly works

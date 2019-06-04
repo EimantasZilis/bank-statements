@@ -1,5 +1,5 @@
 import argparse
-import file_management as fm
+import system.file_management as fm
 
 def init_parser():
     """ Initialise and definte user input commands
@@ -51,7 +51,7 @@ def process_commands(commands=None):
         print("No input command specified")
         return
 
-    config = fm.JsonWrapper("config.json", Source_file=True)
+    config = fm.JsonWrapper("config.json", system_file=True)
     if commands.parser == "info":
         # Process commands for showing info
         import user_input.commands.info as info_cmd
