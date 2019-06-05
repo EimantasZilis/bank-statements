@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+system/configuration/u_categories.json
+system/configuration/u_cmappings.json
+system/configuration/u_paths.json

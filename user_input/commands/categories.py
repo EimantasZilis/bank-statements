@@ -1,26 +1,25 @@
 import sys
-import data.select
-import file_management as fm
+from system.file_management import Jdict
 from user_input.commands.info import show_categories_summary
 from user_input.commands.info import get_categories_summary
 from user_input.commands.data import migrate as reprocess_raw_data
 
-def process(command=None, config=None):
+def process(command=None):
     """ Run commands for 'categories' subparser """
     if command.delete:
-        Delete(command.delete, config)
+        Delete(command.delete)
     if command.add:
-        Create(command.add, config)
+        Create(command.add)
     if command.show:
-        show_categories_summary(config)
+        show_categories_summary()
 
 class AmendCategories():
     """ Base class for amending categories"""
-    def __init__(self, params=None, config=None):
+    def __init__(self, params=None):
         self.existing_categories = None
         self.action_categories = None
         self.params = params
-        self.config = config
+        self.config = None
         self.initialise()
 
     def initialise(self):
@@ -33,6 +32,7 @@ class AmendCategories():
             sys.exit()
 
     def initialise_existing_categories(self):
+        self.config = Jdict("u_categories.json", system_file=True)
         self.existing_categories = self.config.lookup("CATEGORIES")
 
     def parse_params(self):
@@ -50,8 +50,8 @@ class AmendCategories():
 
 class Create(AmendCategories):
     """ Class for creating new categories """
-    def __init__(self, params, config=None):
-        super().__init__(params=params, config=config)
+    def __init__(self, params):
+        super().__init__(params=params)
         self.do_it()
 
     def do_it(self):
@@ -83,8 +83,8 @@ class Create(AmendCategories):
 
 class Delete(AmendCategories):
     """ Class for deleting existing categories """
-    def __init__(self, params, config=None):
-        super().__init__(params=params, config=config)
+    def __init__(self, params):
+        super().__init__(params=params)
         self.do_it()
 
     def do_it(self):
@@ -93,7 +93,7 @@ class Delete(AmendCategories):
         try:
             self.validate_categories_to_delete()
             self.show_actionable_categories()
-            self.delete_references_to_categories()
+            self.delete_references_to_mappings()
             self.delete_categories_from_config()
             reprocess_raw_data("\nRe-processing raw statements...")
         except ValueError as error:
@@ -120,12 +120,12 @@ class Delete(AmendCategories):
         self.config.update("CATEGORIES", updated)
         self.config.write()
 
-    def delete_references_to_categories(self):
-        """ Delete any references to categories
-        from categories.json """
-        categories_config = fm.JsonWrapper("categories.json", "I")
-        categories_config.transpose()
+    def delete_references_to_mappings(self):
+        """ Delete any references to mappings
+        from u_cmappings.json """
+        cmappings = Jdict("u_cmappings.json", system_file=True)
+        cmappings.transpose()
         for category in self.action_categories:
-            categories_config.pop(category)
-        categories_config.transpose()
-        categories_config.write()
+            cmappings.pop(category)
+        cmappings.transpose()
+        cmappings.write()

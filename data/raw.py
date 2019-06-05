@@ -1,5 +1,5 @@
 from pandas.api.types import is_numeric_dtype
-import file_management as fm
+import system.file_management as fm
 
 """ Process and validate data from raw data.xlsx.
 Convert it into useable format by merging description
@@ -10,7 +10,10 @@ def migrate():
     """ Import data from raw_data.xlsx, tidy it up
     and classify transactions based on the known,
     classified transactions """
-    raw_data = fm.XlsxWrapper("raw data.xlsx", "I")
+    remove_xlsx_files("Excluded returns.xlsx", "unclassified.xlsx",
+                      "classified.xlsx")
+
+    raw_data = fm.Excel("raw.xlsx")
     raw_data.initialise()
     mand_columns = ['Date', 'Description', 'Extra', 'Amount']
     raw_data.drop_columns(mand_columns)
@@ -32,14 +35,14 @@ def validate(raw_data):
     drop_blacklisted_transactions(raw_data)
 
     if not raw_data.is_blank():
-        raw_data.write_as(new_name="classified.xlsx", new_type="O")
+        raw_data.write_as(new_name="classified.xlsx", new_type="D")
 
     blank_types = raw_data.get_attr("Type") == ""
     show_summary(raw_data, blank_types)
     if blank_types.any():
         classified_index = raw_data.filter(~blank_types).index.values.tolist()
         raw_data.drop_rows(classified_index)
-        raw_data.write_as(new_name="unclassified.xlsx", new_type="O")
+        raw_data.write_as(new_name="unclassified.xlsx", new_type="D")
 
 def show_summary(raw_data, blank_types):
     """ Print the number of unclassified and
@@ -58,7 +61,7 @@ def add_info_column(raw_data):
 def classify(raw_data):
     """ Classify transactions and assign their
     type to a new "Type" column. """
-    categories = fm.JsonWrapper("categories.json", "I")
+    categories = fm.Jdict("u_cmappings.json", system_file=True)
     types = raw_data.get_attr("Info").apply(
         lambda x: categories.lookup(x, default=""))
     raw_data.set("Type", types)
@@ -79,7 +82,7 @@ def remove_returns(raw_data):
     if returns_df.empty:
         return
 
-    returns = fm.XlsxWrapper("Excluded returns.xlsx", "O", returns_df)
+    returns = fm.Excel(filename="Excluded returns.xlsx", df=returns_df)
 
     for return_id in returns.index_values():
         return_line = returns.filter_by_index(return_id)
@@ -102,3 +105,12 @@ def remove_returns(raw_data):
 
     if not returns.is_blank():
         returns.write()
+
+def remove_xlsx_files(*files):
+    """ Remove files that are no longer required """
+    if not files:
+        return
+
+    for file in files:
+        temp_file = fm.File("Excluded returns.xlsx", "D")
+        temp_file.delete_file()

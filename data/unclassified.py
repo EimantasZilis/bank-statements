@@ -1,8 +1,8 @@
-import file_management as fm
+import system.file_management as fm
 
-categories = fm.JsonWrapper("categories.json", "I")
-classified = fm.Statements("classified.xlsx", "O")
-unclassified = fm.Statements("unclassified.xlsx", "O")
+categories = fm.Jdict("u_categories.json", system_file=True)
+classified = fm.Statements("classified.xlsx")
+unclassified = fm.Statements("unclassified.xlsx")
 
 def process():
     """ Check for any manually classified transactions in

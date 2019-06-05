@@ -1,0 +1,75 @@
+{
+    "STYLING": {
+        "COLUMN": {
+            "Amount": {
+                "cell_format": {
+                    "left": true,
+                    "num_format": 44,
+                    "right": true
+                },
+                "data_validation": {
+                    "criteria": "between",
+                    "maximum": 100000000000.0,
+                    "minimum": -100000000000.0,
+                    "validate": "decimal"
+                },
+                "width": 12
+            },
+            "Date": {
+                "cell_format": {
+                    "left": true,
+                    "num_format": "d mmm yyyy",
+                    "right": true
+                },
+                "width": 15
+            },
+            "Description": {
+                "cell_format": {
+                    "left": true,
+                    "right": true
+                },
+                "width": 70
+            },
+            "Extra": {
+                "cell_format": {
+                    "left": true,
+                    "right": true
+                },
+                "width": 70
+            },
+            "ID": {
+                "cell_format": {
+                    "bold": false,
+                    "right": true
+                },
+                "width": 8
+            },
+            "Info": {
+                "cell_format": {
+                    "left": true,
+                    "right": true
+                },
+                "width": 100
+            },
+            "Type": {
+                "cell_format": {
+                    "left": true,
+                    "right": true
+                },
+                "data_validation": {
+                    "source": "CATEGORIES",
+                    "validate": "list"
+                },
+                "width": 15
+            }
+        },
+        "HEADER": {
+            "bold": true,
+            "border": 1,
+            "fg_color": "#fdfdfd",
+            "font_color": "#1d1b10",
+            "text_wrap": true,
+            "valign": "top"
+        }
+    }
+}
