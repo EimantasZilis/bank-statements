@@ -10,7 +10,10 @@ def migrate():
     """ Import data from raw_data.xlsx, tidy it up
     and classify transactions based on the known,
     classified transactions """
-    raw_data = fm.XlsxWrapper("raw data.xlsx")
+    remove_xlsx_files("Excluded returns.xlsx", "unclassified.xlsx",
+                      "classified.xlsx")
+
+    raw_data = fm.XlsxWrapper("raw.xlsx")
     raw_data.initialise()
     mand_columns = ['Date', 'Description', 'Extra', 'Amount']
     raw_data.drop_columns(mand_columns)
@@ -58,7 +61,7 @@ def add_info_column(raw_data):
 def classify(raw_data):
     """ Classify transactions and assign their
     type to a new "Type" column. """
-    categories = fm.JsonWrapper("categories.json", system_file=True)
+    categories = fm.JsonWrapper("u_cmappings.json", system_file=True)
     types = raw_data.get_attr("Info").apply(
         lambda x: categories.lookup(x, default=""))
     raw_data.set("Type", types)
@@ -102,3 +105,13 @@ def remove_returns(raw_data):
 
     if not returns.is_blank():
         returns.write()
+
+def remove_xlsx_files(*files):
+    """ Remove files that are no longer required """
+    if not files:
+        return
+        
+    for file in files:
+        if file.endswith(".xlsx"):
+            temp_file = fm.XlsxWrapper("Excluded returns.xlsx")
+            temp_file.delete_file()

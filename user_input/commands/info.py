@@ -1,30 +1,31 @@
 from system.file_management import JsonWrapper as jdict
 from system.file_management import Statements
 
-def process(commands=None, config=None):
+def process(commands=None):
     """ Run commands for 'info' subparser """
     if commands.all:
-        show_all(config)
+        show_all()
     else:
         if commands.categories:
-            show_categories_summary(config)
+            show_categories_summary()
         if commands.path:
-            show_common_path(config)
+            show_common_path()
 
-def show_all(config=None):
+def show_all():
     """ Show information about the whole app"""
     print("\n")
-    show_common_path(config)
-    show_categories_summary(config)
+    show_common_path()
+    show_categories_summary()
 
-def show_common_path(config=None):
+def show_common_path():
     print("Common path")
-    print(" >>", config.lookup("COMMON_PATH"), "\n")
+    upaths = jdict("u_paths.json", system_file=True)
+    print(" >>", upaths.lookup("COMMON"), "\n")
 
-def show_categories_summary(config):
+def show_categories_summary():
     """ Show categories summary"""
     print("Classified transactions")
-    categories_info = get_categories_summary(config)
+    categories_info = get_categories_summary()
     categories_info.show(" >> ")
     show_unclassified_summary()
 
@@ -38,12 +39,13 @@ def show_unclassified_summary():
     count = get_unclassified_count()
     print("\nUnclassified transactions\n >> {}".format(count))
 
-def get_categories_summary(config):
+def get_categories_summary():
     """ Gets information about defined categories.
     Shows their names and a number of transactions
     used with each one """
     classified = Statements("classified.xlsx")
-    categories = config.lookup("CATEGORIES")
+    ucategories = jdict("u_categories.json", system_file=True)
+    categories = ucategories.lookup("CATEGORIES")
     cat_count = {k:0 for k in categories}
     cat_info = jdict(dict=cat_count)
     for category in categories:

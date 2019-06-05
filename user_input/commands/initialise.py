@@ -1,26 +1,30 @@
 import pandas as pd
 import system.file_management as fm
 
-def process(commands=None, config=None):
+def process(commands=None):
     """ Run commands for 'initialise' subparser """
     if commands.setup:
         print("Initialising user files and folders...")
-        setup_path(commands.setup[0], config)
+        setup_path(commands.setup[0])
         setup_files_and_dirs()
 
-def setup_path(common_path, config):
+def setup_path(common_path):
     """ Validate and set up common path """
     validate_path(common_path)
-    show_path_changes(common_path, config)
-    write_path(common_path, config)
+    upaths = get_upaths()
+    show_path_changes(common_path, upaths)
+    write_path(common_path, upaths)
+
+def get_upaths():
+    return jdict("u_paths.json", system_file=True)
 
 def validate_path(path):
     if not fm.path_exists_or_is_creatable(path):
         err = "{} is not a valid path\n >> Enter a different path"
         raise ValueError(err.format(path))
 
-def show_path_changes(new_path, config):
-    prev_path = config.lookup("COMMON_PATH")
+def show_path_changes(new_path, upaths):
+    prev_path = upaths.lookup("COMMON")
     if prev_path == new_path:
         print(" >> No path changes")
     else:
@@ -28,10 +32,10 @@ def show_path_changes(new_path, config):
             print(" >> Old path: {}".format(prev_path))
         print(" >> New path: {}".format(new_path))
 
-def write_path(path, config):
+def write_path(path, upaths):
     """ Set common path in config.json """
-    config.update("COMMON_PATH", path)
-    config.write()
+    upaths.update("COMMON", path)
+    upaths.write()
 
 def setup_files_and_dirs():
     """ Initialise user files and directories in common_path """
@@ -41,7 +45,7 @@ def setup_raw_data_template():
     """ Initialise raw data.xlsx file template """
     cols = ["Date", "Description", "Extra", "Amount"]
     blank_df = pd.DataFrame([[""]*len(cols)], columns=cols)
-    return fm.XlsxWrapper(filename="raw data.xlsx", type='I', df=blank_df)
+    return fm.XlsxWrapper(filename="raw.xlsx", type="D", df=blank_df)
 
 def setup_raw_data():
     """ Write raw data.xlsx file template to file. It does

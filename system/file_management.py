@@ -43,8 +43,8 @@ class File:
         if self.system_file:
             return os.path.join(os.getcwd(), "system", "configuration")
         else:
-            config = JsonWrapper(Filename="config.json", system_file=True)
-            return config.lookup("COMMON_PATH")
+            config = JsonWrapper(Filename="u_paths.json", system_file=True)
+            return config.lookup("COMMON")
 
     def file_pointer(self, with_file=True):
         """ Return full file pointer to the file """
@@ -314,18 +314,18 @@ class XlsxFile(File):
         """ Apply styles to xlsx spreadsheet. """
         wsheet.autofilter(0, 0, 0, len(df.columns)-1)
         wsheet.freeze_panes(1, 0)
-        config = JsonWrapper("config.json", system_file=True)
-        self.apply_header_styles(df, config, wsheet, wbook)
-        self.apply_column_styles(df, config, wsheet, wbook)
-        self.apply_data_validation(df, config, wsheet)
+        excel_config = JsonWrapper("o_xlsx.json", system_file=True)
+        self.apply_header_styles(df, excel_config, wsheet, wbook)
+        self.apply_column_styles(df, excel_config, wsheet, wbook)
+        self.apply_data_validation(df, excel_config, wsheet)
 
     def apply_data_validation(self, df, config, wsheet):
         """ Applies data validation to cell based on config.json.
         It checks "source" tag for "CATEGORIES" string. It will
         replace it with the list of categories if it finds one """
-
-        categories = config.lookup("CATEGORIES")
-        lookup_dropdown = ["XLSX", "STYLING", "COLUMN"]
+        categories_config = JsonWrapper("u_categories.json", system_file=True)
+        categories = categories_config.lookup("CATEGORIES")
+        lookup_dropdown = ["STYLING", "COLUMN"]
 
         for col_num, name in enumerate(df.columns.values):
             do_lookup = list(lookup_dropdown)
@@ -340,9 +340,9 @@ class XlsxFile(File):
                                    last_row=1000000, last_col=col_num,
                                    options=data_val.dict)
 
-    def apply_column_styles(self, df, config, wsheet, wbook):
+    def apply_column_styles(self, df, excel_config, wsheet, wbook):
         """ Apply column styles based on config.json. """
-        col_styles = config.lookup("XLSX", "STYLING", "COLUMN", default={})
+        col_styles = excel_config.lookup("STYLING", "COLUMN", default={})
         for col_num, name in enumerate(df.columns.values):
             col_opts = col_styles.get(name)
             if col_opts is None:
@@ -354,11 +354,11 @@ class XlsxFile(File):
             wsheet.set_column(first_col=col_num, last_col=col_num,
                               width=width, cell_format=col_format)
 
-    def apply_header_styles(self, df, config, wsheet, wbook):
+    def apply_header_styles(self, df, excel_config, wsheet, wbook):
         """ Apply header style based on config.json. It will apply
         default configuration if it is not specified. """
         dheader = {"bold": True, "text_wrap": True, "valign": "top", "border": 1}
-        header_style = config.lookup("XLSX", "STYLING", "HEADER", default=dheader)
+        header_style = excel_config.lookup("STYLING", "HEADER", default=dheader)
         header_format = wbook.add_format(header_style)
         for col_num, name in enumerate(df.columns.values):
             wsheet.write(0, col_num, name, header_format)

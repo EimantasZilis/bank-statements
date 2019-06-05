@@ -1,5 +1,4 @@
 import argparse
-import system.file_management as fm
 
 def init_parser():
     """ Initialise and definte user input commands
@@ -51,21 +50,20 @@ def process_commands(commands=None):
         print("No input command specified")
         return
 
-    config = fm.JsonWrapper("config.json", system_file=True)
     if commands.parser == "info":
         # Process commands for showing info
         import user_input.commands.info as info_cmd
-        info_cmd.process(commands, config)
+        info_cmd.process(commands)
 
     if commands.parser == "initialise":
         # Process commands for initialising the app
         import user_input.commands.initialise as init_cmd
-        init_cmd.process(commands, config)
+        init_cmd.process(commands)
 
     if commands.parser == "categories":
         # Process commands related to categories
         import user_input.commands.categories as cat_cmd
-        cat_cmd.process(commands, config)
+        cat_cmd.process(commands)
 
     if commands.parser == "data":
         # Process commands related to data processing
