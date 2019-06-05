@@ -1,5 +1,7 @@
 import pandas as pd
-import system.file_management as fm
+from system.file_management import Excel
+from system.file_management import Jdict
+from system.file_management import path_exists_or_is_creatable
 
 def process(commands=None):
     """ Run commands for 'initialise' subparser """
@@ -16,10 +18,10 @@ def setup_path(common_path):
     write_path(common_path, upaths)
 
 def get_upaths():
-    return jdict("u_paths.json", system_file=True)
+    return Jdict("u_paths.json", system_file=True)
 
 def validate_path(path):
-    if not fm.path_exists_or_is_creatable(path):
+    if not path_exists_or_is_creatable(path):
         err = "{} is not a valid path\n >> Enter a different path"
         raise ValueError(err.format(path))
 
@@ -45,7 +47,7 @@ def setup_raw_data_template():
     """ Initialise raw data.xlsx file template """
     cols = ["Date", "Description", "Extra", "Amount"]
     blank_df = pd.DataFrame([[""]*len(cols)], columns=cols)
-    return fm.XlsxWrapper(filename="raw.xlsx", type="D", df=blank_df)
+    return Excel(filename="raw.xlsx", type="D", df=blank_df)
 
 def setup_raw_data():
     """ Write raw data.xlsx file template to file. It does

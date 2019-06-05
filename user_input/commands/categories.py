@@ -1,5 +1,5 @@
 import sys
-from system.file_management import JsonWrapper as jdict
+from system.file_management import Jdict
 from user_input.commands.info import show_categories_summary
 from user_input.commands.info import get_categories_summary
 from user_input.commands.data import migrate as reprocess_raw_data
@@ -32,7 +32,7 @@ class AmendCategories():
             sys.exit()
 
     def initialise_existing_categories(self):
-        self.config = jdict("u_categories.json", system_file=True)
+        self.config = Jdict("u_categories.json", system_file=True)
         self.existing_categories = self.config.lookup("CATEGORIES")
 
     def parse_params(self):
@@ -123,7 +123,7 @@ class Delete(AmendCategories):
     def delete_references_to_mappings(self):
         """ Delete any references to mappings
         from u_cmappings.json """
-        cmappings = jdict("u_cmappings.json", system_file=True)
+        cmappings = Jdict("u_cmappings.json", system_file=True)
         cmappings.transpose()
         for category in self.action_categories:
             cmappings.pop(category)

@@ -1,5 +1,6 @@
 - Initialise the project
     - Add parameter to specify if files can be written in file_management
+    - Add validation to Raw.xlsx file during initialisation?
     - update readme
         - Include requirements
     - Initialise files once and make it accessible across the app

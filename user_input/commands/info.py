@@ -1,4 +1,4 @@
-from system.file_management import JsonWrapper as jdict
+from system.file_management import Jdict
 from system.file_management import Statements
 
 def process(commands=None):
@@ -19,7 +19,7 @@ def show_all():
 
 def show_common_path():
     print("Common path")
-    upaths = jdict("u_paths.json", system_file=True)
+    upaths = Jdict("u_paths.json", system_file=True)
     print(" >>", upaths.lookup("COMMON"), "\n")
 
 def show_categories_summary():
@@ -44,10 +44,10 @@ def get_categories_summary():
     Shows their names and a number of transactions
     used with each one """
     classified = Statements("classified.xlsx")
-    ucategories = jdict("u_categories.json", system_file=True)
+    ucategories = Jdict("u_categories.json", system_file=True)
     categories = ucategories.lookup("CATEGORIES")
     cat_count = {k:0 for k in categories}
-    cat_info = jdict(dict=cat_count)
+    cat_info = Jdict(dict=cat_count)
     for category in categories:
         filtered = classified.select_by("Type", category)
         cat_info.update(category, filtered.count_rows())

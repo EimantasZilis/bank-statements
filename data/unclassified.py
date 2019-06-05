@@ -1,6 +1,6 @@
 import system.file_management as fm
 
-categories = fm.JsonWrapper("u_categories.json", system_file=True)
+categories = fm.Jdict("u_categories.json", system_file=True)
 classified = fm.Statements("classified.xlsx")
 unclassified = fm.Statements("unclassified.xlsx")
 

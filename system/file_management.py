@@ -43,7 +43,7 @@ class File:
         if self.system_file:
             return os.path.join(os.getcwd(), "system", "configuration")
         else:
-            config = JsonWrapper(Filename="u_paths.json", system_file=True)
+            config = Jdict(Filename="u_paths.json", system_file=True)
             return config.lookup("COMMON")
 
     def file_pointer(self, with_file=True):
@@ -84,7 +84,7 @@ class File:
             error = " >> {} already exists. File was not overwritten."
             raise IOError(error.format(filename))
 
-class JsonWrapper(File):
+class Jdict(File):
     """ Class for manipulating JSON files """
 
     def __init__(self, Filename=None, Type='', dict=None, system_file=False):
@@ -314,7 +314,7 @@ class XlsxFile(File):
         """ Apply styles to xlsx spreadsheet. """
         wsheet.autofilter(0, 0, 0, len(df.columns)-1)
         wsheet.freeze_panes(1, 0)
-        excel_config = JsonWrapper("o_xlsx.json", system_file=True)
+        excel_config = Jdict("o_xlsx.json", system_file=True)
         self.apply_header_styles(df, excel_config, wsheet, wbook)
         self.apply_column_styles(df, excel_config, wsheet, wbook)
         self.apply_data_validation(df, excel_config, wsheet)
@@ -323,14 +323,14 @@ class XlsxFile(File):
         """ Applies data validation to cell based on config.json.
         It checks "source" tag for "CATEGORIES" string. It will
         replace it with the list of categories if it finds one """
-        categories_config = JsonWrapper("u_categories.json", system_file=True)
+        categories_config = Jdict("u_categories.json", system_file=True)
         categories = categories_config.lookup("CATEGORIES")
         lookup_dropdown = ["STYLING", "COLUMN"]
 
         for col_num, name in enumerate(df.columns.values):
             do_lookup = list(lookup_dropdown)
             do_lookup.extend([name, "data_validation"])
-            data_val = JsonWrapper(dict=config.lookup(do_lookup))
+            data_val = Jdict(dict=config.lookup(do_lookup))
             if data_val.is_blank():
                 continue
             elif data_val.lookup("source") == "CATEGORIES":
@@ -522,15 +522,24 @@ class XlsxData(XlsxFile):
     def count_rows(self):
         return len(self.df.index)
 
-class XlsxWrapper(XlsxData):
+class Excel(XlsxData):
     """ A class for working with .xlsx files.
     It stores data in pandas dataframe for data
     manipulation and combines xlsxwriter for file I/O """
 
     def __init__(self, filename=None, type='D', df=None):
         super().__init__(filename=filename, type=type, df=df)
+        self.pre_read_validation()
 
-class Statements(XlsxWrapper):
+    def pre_read_validation(self):
+        """ Do validation before file is read. """
+        if self.filename is not None:
+            extension = self.filename.endswith(".xlsx")
+            if not extension:
+                err = "File {} must have .xlsx extension".format(self.filename)
+                raise ValueError(err)
+
+class Statements(Excel):
     """ A class for working with bank statements """
     mandatory_columns = ("ID", "Type")
 
