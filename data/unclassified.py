@@ -1,7 +1,7 @@
 from system.file_management import Jdict
 from system.file_management import Statements
 
-categories = Jdict("u_cmappings", system_file=True)
+categories = Jdict("u_cmappings")
 classified = Statements("classified")
 unclassified = Statements("unclassified")
 

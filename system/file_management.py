@@ -44,7 +44,7 @@ class File:
         if self.system_file:
             return os.path.join(os.getcwd(), "system", "configuration")
         else:
-            config = Jdict(Filename="u_paths", system_file=True)
+            config = Jdict("u_paths")
             return config.lookup("COMMON")
 
     def file_pointer(self, with_file=True):
@@ -108,7 +108,7 @@ class File:
 class Jdict(File):
     """ Class for manipulating JSON files and dictionaries """
 
-    def __init__(self, Filename=None, Type='', dict=None, system_file=False):
+    def __init__(self, Filename=None, Type='', dict=None, system_file=True):
         super().__init__(filename=Filename, type=Type, system_file=system_file)
         self.dict = dict
         self.initialise()
@@ -345,7 +345,7 @@ class XlsxFile(File):
         """ Apply styles to xlsx spreadsheet. """
         wsheet.autofilter(0, 0, 0, len(df.columns)-1)
         wsheet.freeze_panes(1, 0)
-        excel_config = Jdict("o_xlsx", system_file=True)
+        excel_config = Jdict("o_xlsx")
         self.apply_header_styles(df, excel_config, wsheet, wbook)
         self.apply_column_styles(df, excel_config, wsheet, wbook)
         self.apply_data_validation(df, excel_config, wsheet)
@@ -354,7 +354,7 @@ class XlsxFile(File):
         """ Applies data validation to cell based on config.json.
         It checks "source" tag for "CATEGORIES" string. It will
         replace it with the list of categories if it finds one """
-        categories_config = Jdict("u_categories", system_file=True)
+        categories_config = Jdict("u_categories")
         categories = categories_config.lookup("CATEGORIES")
         lookup_dropdown = ["STYLING", "COLUMN"]
 

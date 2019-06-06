@@ -18,7 +18,7 @@ def setup_path(common_path):
     write_path(common_path, upaths)
 
 def get_upaths():
-    return Jdict("u_paths", system_file=True)
+    return Jdict("u_paths")
 
 def validate_path(path):
     if not path_exists_or_is_creatable(path):

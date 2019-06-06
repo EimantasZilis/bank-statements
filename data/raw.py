@@ -63,7 +63,7 @@ def add_info_column(raw_data):
 def classify(raw_data):
     """ Classify transactions and assign their
     type to a new "Type" column. """
-    categories = Jdict("u_cmappings", system_file=True)
+    categories = Jdict("u_cmappings")
     types = raw_data.get_attr("Info").apply(
         lambda x: categories.lookup(x, default=""))
     raw_data.set("Type", types)

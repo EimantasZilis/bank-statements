@@ -19,7 +19,7 @@ def show_all():
 
 def show_common_path():
     print("Common path")
-    upaths = Jdict("u_paths", system_file=True)
+    upaths = Jdict("u_paths")
     print(" >>", upaths.lookup("COMMON"), "\n")
 
 def show_categories_summary():
@@ -44,7 +44,7 @@ def get_categories_summary():
     Shows their names and a number of transactions
     used with each one """
     classified = Statements("classified")
-    ucategories = Jdict("u_categories", system_file=True)
+    ucategories = Jdict("u_categories")
     categories = ucategories.lookup("CATEGORIES")
     cat_count = {k:0 for k in categories}
     cat_info = Jdict(dict=cat_count)
