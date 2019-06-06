@@ -13,7 +13,7 @@ def migrate():
     remove_xlsx_files("Excluded returns.xlsx", "unclassified.xlsx",
                       "classified.xlsx")
 
-    raw_data = fm.Excel("raw.xlsx")
+    raw_data = fm.Excel("raw")
     raw_data.initialise()
     mand_columns = ['Date', 'Description', 'Extra', 'Amount']
     raw_data.drop_columns(mand_columns)
@@ -82,7 +82,7 @@ def remove_returns(raw_data):
     if returns_df.empty:
         return
 
-    returns = fm.Excel(filename="Excluded returns.xlsx", df=returns_df)
+    returns = fm.Excel(filename="Excluded returns", df=returns_df)
 
     for return_id in returns.index_values():
         return_line = returns.filter_by_index(return_id)

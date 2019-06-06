@@ -4,7 +4,7 @@ import system.file_management as fm
 It uses data from classified.xlsx and removes
 any transactions with blank type for consitency """
 
-classified = fm.Statements("classified.xlsx")
+classified = fm.Statements("classified")
 unclassified = classified.get_attr("Type").isna()
 classified.filter(~unclassified, inplace=True)
 

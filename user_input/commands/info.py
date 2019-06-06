@@ -31,7 +31,7 @@ def show_categories_summary():
 
 def get_unclassified_count():
     """ Get a number of unclassified transactions"""
-    classified = Statements("unclassified.xlsx")
+    classified = Statements("unclassified")
     return classified.count_rows()
 
 def show_unclassified_summary():
@@ -43,7 +43,7 @@ def get_categories_summary():
     """ Gets information about defined categories.
     Shows their names and a number of transactions
     used with each one """
-    classified = Statements("classified.xlsx")
+    classified = Statements("classified")
     ucategories = Jdict("u_categories.json", system_file=True)
     categories = ucategories.lookup("CATEGORIES")
     cat_count = {k:0 for k in categories}

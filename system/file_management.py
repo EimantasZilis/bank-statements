@@ -7,6 +7,7 @@ class File:
     types = {'D': "Data", "P": "Plot"}
 
     def __init__(self, filename=None, type='', system_file=False):
+        self.expected_extension = None
         self.system_file = system_file
         self.filename = filename
         self.subfolders = ''
@@ -83,6 +84,26 @@ class File:
             filename = os.path.basename(fp)
             error = " >> {} already exists. File was not overwritten."
             raise IOError(error.format(filename))
+
+    def validate_file_extension(self):
+        """ Check if file extension is set and compare
+        against expected file extension if is isn't None.
+        It adds expected extension to filename if extension
+        isn't set. It raises an error if extension is already
+        different to expected extension. It does nothing if
+        extension is the same as expected extension. """
+        if self.filename is None or self.expected_extension is None:
+            return
+
+        extension = os.path.splitext(self.filename)[1]
+        if extension == self.expected_extension:
+            pass
+        elif extension == '':
+            self.filename += self.expected_extension
+        else:
+            err = "File {f} must have {e} extension"
+            error = err.format(f=self.filename, e=self.expected_extension)
+            raise ValueError(error)
 
 class Jdict(File):
     """ Class for manipulating JSON files """
@@ -533,11 +554,8 @@ class Excel(XlsxData):
 
     def pre_read_validation(self):
         """ Do validation before file is read. """
-        if self.filename is not None:
-            extension = self.filename.endswith(".xlsx")
-            if not extension:
-                err = "File {} must have .xlsx extension".format(self.filename)
-                raise ValueError(err)
+        self.expected_extension = ".xlsx"
+        self.validate_file_extension()
 
 class Statements(Excel):
     """ A class for working with bank statements """
