@@ -32,7 +32,7 @@ class AmendCategories():
             sys.exit()
 
     def initialise_existing_categories(self):
-        self.config = Jdict("u_categories.json", system_file=True)
+        self.config = Jdict("u_categories", system_file=True)
         self.existing_categories = self.config.lookup("CATEGORIES")
 
     def parse_params(self):
@@ -123,7 +123,7 @@ class Delete(AmendCategories):
     def delete_references_to_mappings(self):
         """ Delete any references to mappings
         from u_cmappings.json """
-        cmappings = Jdict("u_cmappings.json", system_file=True)
+        cmappings = Jdict("u_cmappings", system_file=True)
         cmappings.transpose()
         for category in self.action_categories:
             cmappings.pop(category)
