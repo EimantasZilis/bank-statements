@@ -18,7 +18,7 @@ def setup_path(common_path):
     write_path(common_path, upaths)
 
 def get_upaths():
-    return Jdict("u_paths.json", system_file=True)
+    return Jdict("u_paths")
 
 def validate_path(path):
     if not path_exists_or_is_creatable(path):
@@ -47,7 +47,7 @@ def setup_raw_data_template():
     """ Initialise raw data.xlsx file template """
     cols = ["Date", "Description", "Extra", "Amount"]
     blank_df = pd.DataFrame([[""]*len(cols)], columns=cols)
-    return Excel(filename="raw.xlsx", type="D", df=blank_df)
+    return Excel(filename="raw", type="D", df=blank_df)
 
 def setup_raw_data():
     """ Write raw data.xlsx file template to file. It does

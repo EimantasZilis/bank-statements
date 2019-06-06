@@ -7,6 +7,7 @@ class File:
     types = {'D': "Data", "P": "Plot"}
 
     def __init__(self, filename=None, type='', system_file=False):
+        self.expected_extension = None
         self.system_file = system_file
         self.filename = filename
         self.subfolders = ''
@@ -43,7 +44,7 @@ class File:
         if self.system_file:
             return os.path.join(os.getcwd(), "system", "configuration")
         else:
-            config = Jdict(Filename="u_paths.json", system_file=True)
+            config = Jdict("u_paths")
             return config.lookup("COMMON")
 
     def file_pointer(self, with_file=True):
@@ -84,13 +85,43 @@ class File:
             error = " >> {} already exists. File was not overwritten."
             raise IOError(error.format(filename))
 
-class Jdict(File):
-    """ Class for manipulating JSON files """
+    def validate_file_extension(self):
+        """ Check if file extension is set and compare
+        against expected file extension if is isn't None.
+        It adds expected extension to filename if extension
+        isn't set. It raises an error if extension is already
+        different to expected extension. It does nothing if
+        extension is the same as expected extension. """
+        if self.filename is None or self.expected_extension is None:
+            return
 
-    def __init__(self, Filename=None, Type='', dict=None, system_file=False):
+        extension = os.path.splitext(self.filename)[1]
+        if extension == self.expected_extension:
+            pass
+        elif extension == '':
+            self.filename += self.expected_extension
+        else:
+            err = "File {f} must have {e} extension"
+            error = err.format(f=self.filename, e=self.expected_extension)
+            raise ValueError(error)
+
+class Jdict(File):
+    """ Class for manipulating JSON files and dictionaries """
+
+    def __init__(self, Filename=None, Type='', dict=None, system_file=True):
         super().__init__(filename=Filename, type=Type, system_file=system_file)
         self.dict = dict
+        self.initialise()
+
+    def initialise(self):
+        """ Initialise file """
+        self.pre_read_validation()
         self.read()
+
+    def pre_read_validation(self):
+        """ Do validation before file is read. """
+        self.expected_extension = ".json"
+        self.validate_file_extension()
 
     def read(self):
         """ Read categories from .json file. Set up empty
@@ -314,7 +345,7 @@ class XlsxFile(File):
         """ Apply styles to xlsx spreadsheet. """
         wsheet.autofilter(0, 0, 0, len(df.columns)-1)
         wsheet.freeze_panes(1, 0)
-        excel_config = Jdict("o_xlsx.json", system_file=True)
+        excel_config = Jdict("o_xlsx")
         self.apply_header_styles(df, excel_config, wsheet, wbook)
         self.apply_column_styles(df, excel_config, wsheet, wbook)
         self.apply_data_validation(df, excel_config, wsheet)
@@ -323,7 +354,7 @@ class XlsxFile(File):
         """ Applies data validation to cell based on config.json.
         It checks "source" tag for "CATEGORIES" string. It will
         replace it with the list of categories if it finds one """
-        categories_config = Jdict("u_categories.json", system_file=True)
+        categories_config = Jdict("u_categories")
         categories = categories_config.lookup("CATEGORIES")
         lookup_dropdown = ["STYLING", "COLUMN"]
 
@@ -533,11 +564,8 @@ class Excel(XlsxData):
 
     def pre_read_validation(self):
         """ Do validation before file is read. """
-        if self.filename is not None:
-            extension = self.filename.endswith(".xlsx")
-            if not extension:
-                err = "File {} must have .xlsx extension".format(self.filename)
-                raise ValueError(err)
+        self.expected_extension = ".xlsx"
+        self.validate_file_extension()
 
 class Statements(Excel):
     """ A class for working with bank statements """

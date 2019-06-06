@@ -1,19 +1,21 @@
 from pandas.api.types import is_numeric_dtype
-import system.file_management as fm
+from system.file_management import File
+from system.file_management import Jdict
+from system.file_management import Excel
 
-""" Process and validate data from raw data.xlsx.
+""" Process and validate data from raw.xlsx.
 Convert it into useable format by merging description
 and extra columns into info, removing blacklisted
 transactions and classifying data where possible. """
 
 def migrate():
-    """ Import data from raw_data.xlsx, tidy it up
+    """ Import data from raw.xlsx, tidy it up
     and classify transactions based on the known,
     classified transactions """
     remove_xlsx_files("Excluded returns.xlsx", "unclassified.xlsx",
                       "classified.xlsx")
 
-    raw_data = fm.Excel("raw.xlsx")
+    raw_data = Excel("raw")
     raw_data.initialise()
     mand_columns = ['Date', 'Description', 'Extra', 'Amount']
     raw_data.drop_columns(mand_columns)
@@ -61,7 +63,7 @@ def add_info_column(raw_data):
 def classify(raw_data):
     """ Classify transactions and assign their
     type to a new "Type" column. """
-    categories = fm.Jdict("u_cmappings.json", system_file=True)
+    categories = Jdict("u_cmappings")
     types = raw_data.get_attr("Info").apply(
         lambda x: categories.lookup(x, default=""))
     raw_data.set("Type", types)
@@ -82,7 +84,7 @@ def remove_returns(raw_data):
     if returns_df.empty:
         return
 
-    returns = fm.Excel(filename="Excluded returns.xlsx", df=returns_df)
+    returns = Excel(filename="Excluded returns", df=returns_df)
 
     for return_id in returns.index_values():
         return_line = returns.filter_by_index(return_id)
@@ -112,5 +114,5 @@ def remove_xlsx_files(*files):
         return
 
     for file in files:
-        temp_file = fm.File("Excluded returns.xlsx", "D")
+        temp_file = File("Excluded returns.xlsx", "D")
         temp_file.delete_file()

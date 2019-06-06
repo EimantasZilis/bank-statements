@@ -19,7 +19,7 @@ def show_all():
 
 def show_common_path():
     print("Common path")
-    upaths = Jdict("u_paths.json", system_file=True)
+    upaths = Jdict("u_paths")
     print(" >>", upaths.lookup("COMMON"), "\n")
 
 def show_categories_summary():
@@ -31,7 +31,7 @@ def show_categories_summary():
 
 def get_unclassified_count():
     """ Get a number of unclassified transactions"""
-    classified = Statements("unclassified.xlsx")
+    classified = Statements("unclassified")
     return classified.count_rows()
 
 def show_unclassified_summary():
@@ -43,8 +43,8 @@ def get_categories_summary():
     """ Gets information about defined categories.
     Shows their names and a number of transactions
     used with each one """
-    classified = Statements("classified.xlsx")
-    ucategories = Jdict("u_categories.json", system_file=True)
+    classified = Statements("classified")
+    ucategories = Jdict("u_categories")
     categories = ucategories.lookup("CATEGORIES")
     cat_count = {k:0 for k in categories}
     cat_info = Jdict(dict=cat_count)
