@@ -5,7 +5,7 @@ import numpy as np
 
 import plot.stats as stats
 import plot.generate as generate
-import system.file_management as fm
+from system.file_management import File
 
 TIMEFRAME = 'Year'
 
@@ -32,7 +32,7 @@ def do_it(main_df):
 
     # Write data
     f.tight_layout()
-    image = fm.File(filename='summary.png', type="P")
+    image = File(filename='summary.png', type="P")
     filepath = image.file_pointer()
     plt.savefig(filepath, bbox_inches='tight')
     print(' >>',filepath)

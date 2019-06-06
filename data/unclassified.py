@@ -1,8 +1,9 @@
-import system.file_management as fm
+from system.file_management import Jdict
+from system.file_management import Statements
 
-categories = fm.Jdict("u_cmappings", system_file=True)
-classified = fm.Statements("classified")
-unclassified = fm.Statements("unclassified")
+categories = Jdict("u_cmappings", system_file=True)
+classified = Statements("classified")
+unclassified = Statements("unclassified")
 
 def process():
     """ Check for any manually classified transactions in

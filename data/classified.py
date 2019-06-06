@@ -1,10 +1,10 @@
-import system.file_management as fm
+from system.file_management import Statements
 
 """ a module for working with classified data.
 It uses data from classified.xlsx and removes
 any transactions with blank type for consitency """
 
-classified = fm.Statements("classified")
+classified = Statements("classified")
 unclassified = classified.get_attr("Type").isna()
 classified.filter(~unclassified, inplace=True)
 
