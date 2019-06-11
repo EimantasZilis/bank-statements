@@ -97,7 +97,7 @@ reference as a way of distinguishing similar transactions.
 
 For example, raw.xlsx might contain
 | Date | Description | Extra | Amount |
-| -------- | ------------- | --- | --- |
+| -------- |:-------------:|:---:| ---:|
 | 01/01/01 | Petrol station |  | 24.10 |
 | 01/01/01 | Petrol station |  | 30.10 |
 
