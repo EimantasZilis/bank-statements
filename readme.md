@@ -1,122 +1,166 @@
 # Bank-Statements
-
-## This is currently out of date.
-
-### Description
 Learn more about your spending habits and find out where your money is going!
+Use the data from the bank statements to classify into pre-defined categories
+and create insights into your budget.
 
-It uses transaction data from the bank statements, classifies
-data based on user defined categories and summarises findings in through plots.
-
-The plots show the findings through monthly and annual timeframes and how
-expenses vary for different categories.
-
-### Table of Contents
+## Table of Contents
 1. Installation
-   - Common directory
-   - Input files
+   - Minimum requirements
 2. Configuration
+   - Set up common path
+   - Define categories
 3. Usage
-   - Import data
+   - Set up raw data
+   - Migrate raw data
    - Classify data
-   - Generate plots
+   - Reclassify data
+   - Analysis
 
-#### 1. Installation
-##### 1.1 Common directory
-All user input and output files should be located in a COMMON directory:
-C:\Users\Eimantas\Dropbox\finances
-This is currently hard coded in file_management.py File class.
-Change the directory to specify where files will be located.
+## 1. Installation
+### 1.1 Minimum requirements
+   - Excel (2013)
+   - Argparse (1.1)
+   - Json (2.0.9)
+   - Matplotlib
+   - Numpy (1.15.1)
+   - Pandas (0.24.1)
+   - Python (3.6.0)
+   - XlsxWriter (1.1.5)
 
-##### 1.2 Input files
-Two input files are required:
- - COMMON\Input\raw data.xlsx
- - COMMON\Input\config.json
+## 2. Configuration
+The app is dependant on data from bank statements. So in order to use the app
+and analyse the data, a few things need to happen first. Firstly, you need to
+specify where the data will be located. Then you need to define which
+categories you would like to put your transactions against.
 
-raw.data.xlsx contains transaction data from bank statements.
-The first row contains the columns headings and it must contain
-the following columns:
- - Date
- - Description
- - Extra
- - Amount
+### 2.1 Set up common path
+Common path is a location where user files will be located and will be used by
+the app. It will contain files for raw data, transactions to classify and other
+types of data processed by the app.
 
-Extra column is mandatory but the data underneath is optional.
-It can be used for any other reference associated with the transaction:
-e.g. pre-categorised bank data.
+To specify common path, execute
+```
+python main.py initialise -s C:\Users\Eimantas\Dropbox\finances
+```
+where the argument after `-s` specifies the directory.
+By running the initialisation command, few things happen.
+ - It tells the app the common path is located.
+ - It creates relevant directories.
+ - It creates raw.xlsx Excel file template in common_path\Data directory.
 
-The dates in the spreadsheet must follow dd/mm/yyyy format.
-Amount column should only contain numeric values.
+At any point, you can run
+```
+python main.py info -p
+```
+to check the common path of the app.
 
-config.json contains user configuration. At moment, it should
-only contain the list of categories.
+### 2.2 Define categories
+Transactions will be put classified based on pre-defined categories. For now,
+create a preliminary list of categories of your choice such as "Groceries",
+"Transport" and "Rent" by running
+```
+python main.py categories -a "Groceries,Transport,Rent"
+```
+More categories can be added at any time using the same `categories -a` command.
+Similarly, to delete unwanted categories such as "Rent" and "Groceries", run
+```
+python main.py categories -d "Rent,Groceries"
+```
+You can check current categories by running
+```
+python main.py categories -s
+```
+It will also display the number of transactions against each category.
 
-#### 2. Configuration
-config.json in working directory is used for configuration.
-Options under "XLSX" > "STYLING" > "COLUMN" specify styles
-for columns in the spreadsheet.
+"BLACKLIST" is a special type of category which should be created among others.
+Any transactions put against it will be ignored by the app. This can be useful
+if you insist to ignore certain types of transactions without deleting them from
+ file. These could be transactions for paying off the credit card, where it is
+not classified as expense.
 
-Each column has three options:
- - width
- - cell_format
- - data_validation
+## 3. Usage
+With categories set up and raw.xlsx file template available, the data from bank
+statements can be migrated into the app, transactions can be classified and
+analysis can be done.
 
-cell_format is used for defining visual appearance of columns.
-Cell methods and formats based on
-https://xlsxwriter.readthedocs.io/format.html can be applied
-against column ID in config.json.
+### 3.1 Set up raw data
+raw.xlsx file template was created as part of the first step and it will be
+used for storing raw data from bank statements. While it is currently empty, the
+data from bank statements should copied into and maintained as new data becomes
+available.
 
-data_validation is used for constraining data formats for columns.
-The options for https://xlsxwriter.readthedocs.io/worksheet.html#data_validation
-can be defined against data_validation attribute against the
-column ID in config.json.
+There are four mandatory columns in the file: Date, Description, Extra and
+Amount. (Transaction) date and amount are self explanatory columns. Description
+column should be used for transaction description as specified on the bank
+statements. "Extra" column does not need to be filled and can be used for user
+reference as a way of distinguishing similar transactions.
 
-"data_validation": {"validate": "list", source": "CATEGORIES"}
-is a special feature, where a dropdown will be a applied to each
-cell in a column. The available values to choose from will be
-taken from the list of defined categories against
-COMMON\Input\config.json.      
+For example, raw.xlsx might contain
 
-#### 3. Usage
-##### 3.1 Import data
-Any new data from "raw data.xslx" must be imported into the app before any
-further actions can be taken.  To do this, execute: `main.py -import` in the
-command line. It will parse, validate and export data. It will also attempt to
-classify data based on the known transactions.
+| Date     | Description    | Extra | Amount |
+|----------|----------------|--------|--------|
+| 01/01/01 | Petrol station | &nbsp; | 24.10  |
+| 01/01/01 | Petrol station | &nbsp; | 30.10  |
 
-It does not know about any transactions the first time it is run, hence the
-classifications (or in other word types) will be blank. All of unclassified
-transactions are exported to COMMON\Output\unclassified.xlsx.
+Later on, you may have specified that anything with "Petrol station" keywords
+should be classified as "Transport" and it would classify both transactions
+under "Transport". If you actually bought groceries and fuel at the petrol
+station on the same day, you might insist of keeping the transactions separate
+and classify them into different types. This can be accomplished by leaving
+descriptions as is and using "Extra" column, by specifying additional keywords
+to distinguish between categories via
 
-Any transactions it already knows about will be classified and go to
-COMMON\Output\classified.xlsx when running `main.py -import`
+| Date | Description | Extra | Amount |
+| -------- | ------------- | --- | --- |
+| 01/01/01 | Petrol station | Food | 24.10 |
+| 01/01/01 | Petrol station |  | 30.10 |
 
-Note that Any further changes or updates to "raw data.xlsx" will not be picked
-up unless the data is imported. Make sure to run `main.py -import` after each
-update to the file.
+it would put these transactions under separate categories, provided that you
+classify them as separate later on.
 
-##### 3.2 classify data
-Any unclassified data is located in COMMON\Output\unclassified.xlsx file. To
-classify the transactions, pick a classification for each from the dropdown list
-against the "Type" column and save the file.
+Raw.xlsx spreadsheet can contain extra columns for user reference, however the
+app will only use Date, Description, Extra and Amount columns. The app does not
+modify or overwrite this file, even if `python main.py initialise -s` is
+executed with the same common path again.
 
-In the command line, run `main.py -classify` and it will read the file, classify
-data and move all classified transactions into COMMON\Output\classified.xlsx.
+### 3.2 Migrate raw data
+When the data is copied into raw.xlsx, it can be migrated into the app by using
+```
+python main.py data -i
+```
+This will import data, validate and process it. By doing so, it will
+create new Excel files in common_path\Data.
+ - classified.xlsx contains all classified and unclassified transactions. It
+   is similar to raw.xlsx with an extra "Type" column representing category.
+ - unclassified.xlsx will contain any unclassified transactions.
+ - Excluded returns.xlsx contains transaction pairs with the same descriptions
+   and equal, but opposite (positive and negative) amounts. These are excluded
+   transactions from classified.xlsx
 
-If all transactions are classified within unclassified.xlsx, the file will be
-deleted.
+### 3.3 Classify data
+Transactions are classified via unclassified.xlsx file. Use "Type" column to
+classify transactions. The column cells have built in dropdown with the list of
+categories to choose from. To process the transactions, run  
+```
+python main.py data -c
+```
+It will go through the file and move classifications into classified.xlsx.
+By doing so, it will also remove transactions from unclassified.xlsx. If there
+are not transactions left in unclassified.xlsx, the file will be removed.
 
-BLACKLIST is a special category than can be used when classifying transactions.
-If there are any transactions classified as BLACKLIST, they will be
-excluded from the data set. For example, this is useful if we want to
-exclude transactions for paying into a card.
+### 3.4 Reclassify data
+Categories can removed at any point, even if there are already any classified
+transactions against those categories. If that happens, it will remove those
+classifications from already classified transactions and put them into
+unclassified.xlsx. The transactions can be classified again using the normal
+process.
 
-##### 3.3 Generate plots
-At any given time, analysis can be done and the results summarised via plots.
-They can be generated by running `main.py -plot`. This will only use classified
-data from classified.xlsx.
-
-These are the following plots generated.
+### 3.5 Analysis
+You can run the analysis and generate plots summarising expenses. This will only
+use classified data from classified.xlsx. The plots are generated by running
+```
+python main.py plots -a
+```
 
 Annual plot contains summary.png showing how each category changes
 year-to-year. Each plot contains four subplots showing:
