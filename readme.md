@@ -97,9 +97,9 @@ reference as a way of distinguishing similar transactions.
 
 For example, raw.xlsx might contain
 | Date     | Description    | Extra | Amount |
-|----------|----------------|-------|--------|
-| 01/01/01 | Petrol station |       | 24.10  |
-| 01/01/01 | Petrol station |       | 30.10  |
+|----------|----------------|--------|--------|
+| 01/01/01 | Petrol station | &nbsp; | 24.10  |
+| 01/01/01 | Petrol station | &nbsp; | 30.10  |
 
 Later on, you may have specified that anything with "Petrol station" keywords
 should be classified as "Transport" and it would classify both transactions
