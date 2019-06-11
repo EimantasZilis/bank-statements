@@ -96,10 +96,10 @@ statements. "Extra" column does not need to be filled and can be used for user
 reference as a way of distinguishing similar transactions.
 
 For example, raw.xlsx might contain
-| Date | Description | Extra | Amount |
-| -------- |:-------------:|:---:| ---:|
-| 01/01/01 | Petrol station |  | 24.10 |
-| 01/01/01 | Petrol station |  | 30.10 |
+| Date     | Description    | Extra | Amount |
+|----------|----------------|-------|--------|
+| 01/01/01 | Petrol station |       | 24.10  |
+| 01/01/01 | Petrol station |       | 30.10  |
 
 Later on, you may have specified that anything with "Petrol station" keywords
 should be classified as "Transport" and it would classify both transactions
