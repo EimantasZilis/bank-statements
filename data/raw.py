@@ -12,13 +12,18 @@ def migrate():
     """ Import data from raw.xlsx, tidy it up
     and classify transactions based on the known,
     classified transactions """
-    remove_xlsx_files("Excluded returns.xlsx", "unclassified.xlsx",
-                      "classified.xlsx")
 
     raw_data = Excel("raw")
     raw_data.initialise()
+    if raw_data.is_blank():
+        print(" >> {} is empty".format(raw_data.filename))
+        return
+
     mand_columns = ['Date', 'Description', 'Extra', 'Amount']
     raw_data.drop_columns(mand_columns)
+    remove_xlsx_files("Excluded returns.xlsx", "unclassified.xlsx",
+                      "classified.xlsx")
+
     validate(raw_data)
 
 def validate(raw_data):

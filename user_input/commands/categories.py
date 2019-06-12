@@ -18,6 +18,7 @@ class AmendCategories():
     def __init__(self, params=None):
         self.existing_categories = None
         self.action_categories = None
+        self.reprocess_data = True
         self.params = params
         self.config = None
         self.initialise()
@@ -26,6 +27,7 @@ class AmendCategories():
         """ Initialise instance parameters"""
         try:
             self.initialise_existing_categories()
+            self.check_existing_categories()
             self.parse_params()
         except ValueError as error:
             print(error)
@@ -44,6 +46,14 @@ class AmendCategories():
         if not self.action_categories:
             raise ValueError(" >> Invalid categories entered")
 
+    def check_existing_categories(self):
+        """ Check if there are any existing categories. If there
+        aren't any, set reprocess_data data flag to False to
+        avoid raw data being imported"""
+        print("existing:", self.existing_categories)
+        if not self.existing_categories:
+            self.reprocess_data = False
+
     def show_actionable_categories(self):
         for category in self.action_categories:
             print(" >>", category)
@@ -61,13 +71,16 @@ class Create(AmendCategories):
             self.validate_new_categories()
             self.show_actionable_categories()
             self.update_categories_config()
-            reprocess_raw_data("\nRe-processing raw statements...")
+            reprocess_raw_data("\nRe-processing raw data...")
         except ValueError as error:
             print(error)
 
     def validate_new_categories(self):
         """ Validate new categories. It checks if there
         are no duplicates """
+        if self.existing_categories is None:
+            return
+
         if self.action_categories is not None:
             upper = [x.upper() for x in self.existing_categories]
             duplicates = [n for n in self.action_categories if n.upper() in upper]
@@ -95,7 +108,7 @@ class Delete(AmendCategories):
             self.show_actionable_categories()
             self.delete_references_to_mappings()
             self.delete_categories_from_config()
-            reprocess_raw_data("\nRe-processing raw statements...")
+            reprocess_raw_data("\nRe-processing raw data...")
         except ValueError as error:
             print(error)
 

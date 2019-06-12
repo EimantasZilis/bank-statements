@@ -24,10 +24,13 @@ def show_common_path():
 
 def show_categories_summary():
     """ Show categories summary"""
-    print("Classified transactions")
     categories_info = get_categories_summary()
-    categories_info.show(" >> ")
-    show_unclassified_summary()
+    if categories_info is None:
+        print(">> Categories not defined")
+    else:
+        print("Classified transactions")
+        categories_info.show(" >> ")
+        show_unclassified_summary()
 
 def get_unclassified_count():
     """ Get a number of unclassified transactions"""
@@ -46,9 +49,12 @@ def get_categories_summary():
     classified = Statements("classified")
     ucategories = Jdict("u_categories")
     categories = ucategories.lookup("CATEGORIES")
-    cat_count = {k:0 for k in categories}
-    cat_info = Jdict(dict=cat_count)
-    for category in categories:
-        filtered = classified.select_by("Type", category)
-        cat_info.update(category, filtered.count_rows())
-    return cat_info
+    if categories is None:
+        return None
+    else:
+        cat_count = {k:0 for k in categories}
+        cat_info = Jdict(dict=cat_count)
+        for category in categories:
+            filtered = classified.select_by("Type", category)
+            cat_info.update(category, filtered.count_rows())
+        return cat_info
