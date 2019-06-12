@@ -50,7 +50,6 @@ class AmendCategories():
         """ Check if there are any existing categories. If there
         aren't any, set reprocess_data data flag to False to
         avoid raw data being imported"""
-        print("existing:", self.existing_categories)
         if not self.existing_categories:
             self.reprocess_data = False
 
