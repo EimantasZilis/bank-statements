@@ -1,4 +1,5 @@
 import argparse
+from system.file_management import Jdict
 
 def init_parser():
     """ Initialise and definte user input commands
@@ -46,8 +47,10 @@ def init_parser():
 
 def process_commands(commands=None):
     """ Process input command and execute a given option """
-    if commands is None or commands.parser == "":
-        print("No input command specified")
+    try:
+        pre_process_validation(commands)
+    except ValueError as err:
+        print(err)
         return
 
     if commands.parser == "info":
@@ -74,3 +77,28 @@ def process_commands(commands=None):
         # Process commands responsible for generating plots
         import user_input.commands.plots as plots_cmd
         plots_cmd.process(commands)
+
+def pre_process_validation(commands):
+    """ Carry out any validation commands before
+    any commands get processed. """
+    if commands is None or commands.parser == "":
+        raise ValueError("No input command specified")
+    validate_common_path(commands)
+
+def validate_common_path(commands):
+    """ Validate if common path exists and if commands
+    can be run even if it doesn't """
+    if common_path_exists():
+        return
+
+    ok_commands = {"initialise" : "setup"}
+    ok_command = ok_commands.get(commands.parser)
+    if ok_command is None:
+        err = "Common path is not defined\n" \
+               " >> Set it up before running other commands"
+        raise ValueError(err)
+
+def common_path_exists():
+    """ Check if common path exists. Returns True/False"""
+    cpath = Jdict("u_paths")
+    return cpath.is_blank()
