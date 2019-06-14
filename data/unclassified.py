@@ -14,9 +14,9 @@ def process():
         newly_classified = unclassified.df.dropna(axis=0, subset=['Type'])
         show_summary(unclassified, newly_classified)
         if not newly_classified.empty:
+            update_categories_dict(newly_classified)
             update_classified_data(newly_classified)
             update_unclassified_data(newly_classified)
-            update_categories_dict(newly_classified)
 
 def show_summary(unclassified, newly_classified):
     new_count = len(newly_classified.index)

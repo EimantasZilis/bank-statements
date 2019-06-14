@@ -49,6 +49,8 @@ def validate(raw_data):
     if blank_types.any():
         classified_index = raw_data.filter(~blank_types).index.values.tolist()
         raw_data.drop_rows(classified_index)
+        raw_data.drop_duplicates(subset="Info")
+        raw_data.sort_values(by="Info")
         raw_data.write_as(new_name="unclassified.xlsx", new_type="D")
 
 def show_summary(raw_data, blank_types):
