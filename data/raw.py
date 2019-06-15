@@ -2,6 +2,7 @@ from pandas.api.types import is_numeric_dtype
 from system.file_management import File
 from system.file_management import Jdict
 from system.file_management import Excel
+from user_input.commands.info import get_transactions_summary
 
 """ Process and validate data from raw.xlsx.
 Convert it into useable format by merging description
@@ -12,13 +13,18 @@ def migrate():
     """ Import data from raw.xlsx, tidy it up
     and classify transactions based on the known,
     classified transactions """
-    remove_xlsx_files("Excluded returns.xlsx", "unclassified.xlsx",
-                      "classified.xlsx")
 
     raw_data = Excel("raw")
     raw_data.initialise()
+    if raw_data.is_blank():
+        print(" >> {} is empty".format(raw_data.filename))
+        return
+
     mand_columns = ['Date', 'Description', 'Extra', 'Amount']
     raw_data.drop_columns(mand_columns)
+    remove_xlsx_files("Excluded returns.xlsx", "unclassified.xlsx",
+                      "classified.xlsx")
+
     validate(raw_data)
 
 def validate(raw_data):
@@ -44,14 +50,18 @@ def validate(raw_data):
     if blank_types.any():
         classified_index = raw_data.filter(~blank_types).index.values.tolist()
         raw_data.drop_rows(classified_index)
+        raw_data.drop_duplicates(subset="Info")
+        raw_data.sort_values(by="Info")
         raw_data.write_as(new_name="unclassified.xlsx", new_type="D")
 
 def show_summary(raw_data, blank_types):
     """ Print the number of unclassified and
     classified transactions found """
-    total_count = raw_data.count_rows()
-    classified_count = len(raw_data.filter(~blank_types).index)
-    unclassified_count = total_count - classified_count
+    summary = get_transactions_summary("classified")
+    unclassified_count =  summary.get("Unclassified")[0]
+    classified_count = summary.get("Classified")[0]
+    total_count = summary.get("Total")[0]
+
     info = " >> Classified: {c}/{t}\n >> Unclassified: {u}/{t}"
     print(info.format(c=classified_count, t=total_count, u=unclassified_count))
 

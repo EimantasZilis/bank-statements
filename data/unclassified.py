@@ -1,5 +1,7 @@
+from data.raw import classify
 from system.file_management import Jdict
 from system.file_management import Statements
+from user_input.commands.info import get_transactions_summary
 
 categories = Jdict("u_cmappings")
 classified = Statements("classified")
@@ -12,21 +14,27 @@ def process():
         print(" >> All transactions classified already")
     else:
         newly_classified = unclassified.df.dropna(axis=0, subset=['Type'])
-        show_summary(unclassified, newly_classified)
-        if not newly_classified.empty:
+        if newly_classified.empty:
+            print(" >> No new classifications available")
+        else:
+            show_summary()
+            update_categories_dict(newly_classified)
             update_classified_data(newly_classified)
             update_unclassified_data(newly_classified)
-            update_categories_dict(newly_classified)
 
-def show_summary(unclassified, newly_classified):
-    new_count = len(newly_classified.index)
-    total_count = unclassified.count_rows()
+def show_summary():
+    summary = get_transactions_summary("unclassified")
+    new_count = summary.get("Classified")[1]
+    total_count = summary.get("Total")[1]
     info = " >> New classifications: {c}/{t}"
     print(info.format(c=new_count, t=total_count))
 
 def update_classified_data(newly_classified):
-    """ Update classified data with newly_classified """
+    """ Update classified data with newly_classified.
+    Also find other similar transactions and classify
+    them as well. """
     classified.update(newly_classified)
+    classify(classified)
     classified.write()
 
 def update_unclassified_data(newly_classified):

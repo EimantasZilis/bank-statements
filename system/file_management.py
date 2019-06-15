@@ -550,8 +550,20 @@ class XlsxData(XlsxFile):
         for val in self.df.index:
             yield val
 
+    def index(self):
+        return self.df.index
+
     def count_rows(self):
         return len(self.df.index)
+
+    def sort_values(self, by, axis=0, ascending=True):
+        self.df.sort_values(by, axis=axis, ascending=ascending, inplace=True)
+
+    def drop_duplicates(self, subset=None, keep="first"):
+        self.df.drop_duplicates(subset=subset, keep=keep, inplace=True)
+
+    def dropna(self, axis=0, subset=None, how='all', inplace=True):
+        return self.df.dropna(axis=axis, how=how, subset=subset, inplace=inplace)
 
 class Excel(XlsxData):
     """ A class for working with .xlsx files.
