@@ -30,8 +30,11 @@ def show_summary():
     print(info.format(c=new_count, t=total_count))
 
 def update_classified_data(newly_classified):
-    """ Update classified data with newly_classified """
+    """ Update classified data with newly_classified.
+    Also find other similar transactions and classify
+    them as well. """
     classified.update(newly_classified)
+    classify(classified)
     classified.write()
 
 def update_unclassified_data(newly_classified):
