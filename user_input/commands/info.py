@@ -1,3 +1,4 @@
+import pandas as pd
 from system.file_management import Jdict
 from system.file_management import Statements
 
@@ -16,6 +17,7 @@ def show_all():
     print("\n")
     show_common_path()
     show_categories_summary()
+    show_transactions_summary()
 
 def show_common_path():
     print("Common path")
@@ -30,17 +32,6 @@ def show_categories_summary():
         print(" >> Categories not defined")
     else:
         categories_info.show(" >> ")
-        show_unclassified_summary()
-
-def get_unclassified_count():
-    """ Get a number of unclassified transactions"""
-    classified = Statements("unclassified")
-    return classified.count_rows()
-
-def show_unclassified_summary():
-    """ Show information about unclassified transactions"""
-    count = get_unclassified_count()
-    print("\nUnclassified transactions\n >> {}".format(count))
 
 def get_categories_summary():
     """ Gets information about defined categories.
@@ -61,3 +52,36 @@ def get_categories_summary():
         filtered = classified.select_by("Type", category)
         cat_info.update(category, filtered.count_rows())
     return cat_info
+
+def show_transactions_summary():
+    """ Show transactions summary"""
+    summary = get_transactions_summary()
+    df = pd.DataFrame(summary, index=["Total", "Unique"])
+    print("\nTransactions:")
+    print(df.head())
+
+def get_transactions_summary(file="classified"):
+    """ Generate a summary showing a number of classified,
+    unclassified and total transactions. Also shows the same
+    summary for unique transactions, where transactions are
+    grouped by info column. """
+
+    all_data = Statements(file)
+    total, classified, unclassified = get_count(all_data)
+    all_data.drop_duplicates(subset="Info")
+    total_unique, classified_unique, unclassified_unique = get_count(all_data)
+
+    summary = {}
+    summary["Total"] = [total, total_unique]
+    summary["Classified"] = [classified, classified_unique]
+    summary["Unclassified"] = [unclassified, unclassified_unique]
+    return summary
+
+def get_count(data):
+    """ Return the number of transactions: all,
+    classified and unclassified."""
+    total_count = data.count_rows()
+    classified_data = data.dropna(subset=["Type"], inplace=False)
+    classified_count = len(classified_data.index)
+    unclassified_count = total_count - classified_count
+    return total_count, classified_count, unclassified_count

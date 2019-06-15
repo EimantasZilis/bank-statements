@@ -2,6 +2,7 @@ from pandas.api.types import is_numeric_dtype
 from system.file_management import File
 from system.file_management import Jdict
 from system.file_management import Excel
+from user_input.commands.info import get_transactions_summary
 
 """ Process and validate data from raw.xlsx.
 Convert it into useable format by merging description
@@ -56,9 +57,11 @@ def validate(raw_data):
 def show_summary(raw_data, blank_types):
     """ Print the number of unclassified and
     classified transactions found """
-    total_count = raw_data.count_rows()
-    classified_count = len(raw_data.filter(~blank_types).index)
-    unclassified_count = total_count - classified_count
+    summary = get_transactions_summary("classified")
+    unclassified_count =  summary.get("Unclassified")[0]
+    classified_count = summary.get("Classified")[0]
+    total_count = summary.get("Total")[0]
+
     info = " >> Classified: {c}/{t}\n >> Unclassified: {u}/{t}"
     print(info.format(c=classified_count, t=total_count, u=unclassified_count))
 
