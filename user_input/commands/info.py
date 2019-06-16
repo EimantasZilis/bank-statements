@@ -7,18 +7,16 @@ from system.file_management import Statements
 def process(commands=None):
     """ Run commands for 'info' subparser """
     if commands.all:
-        show_all()
-    else:
-        if commands.categories:
-            show_categories_summary()
-        if commands.path:
-            show_common_path()
+        commands.tranasctions = True
+        commands.categories = True
+        commands.path = True
 
-def show_all():
-    """ Show information about the whole app"""
-    show_common_path()
-    show_transactions_summary()
-    show_categories_summary()
+    if commands.path:
+        show_common_path()
+    if commands.transactions:
+        show_transactions_summary()
+    if commands.categories:
+        show_categories_summary()
 
 def show_common_path():
     print("\nCommon path")
