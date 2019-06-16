@@ -57,13 +57,9 @@ def validate(raw_data):
 def show_summary(raw_data, blank_types):
     """ Print the number of unclassified and
     classified transactions found """
-    summary = get_transactions_summary("classified")
-    unclassified_count =  summary.get("Unclassified")[0]
-    classified_count = summary.get("Classified")[0]
-    total_count = summary.get("Total")[0]
-
+    total, classified, unclassified = get_transactions_summary("Classified")
     info = " >> Classified: {c}/{t}\n >> Unclassified: {u}/{t}"
-    print(info.format(c=classified_count, t=total_count, u=unclassified_count))
+    print(info.format(c=classified, t=total, u=unclassified))
 
 def add_info_column(raw_data):
     raw_data.get_attr("Description").fillna("", inplace=True)
