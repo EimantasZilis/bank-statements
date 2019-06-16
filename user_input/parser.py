@@ -42,6 +42,8 @@ def init_parser():
                              dest="categories", help="Categories info")
     parser_info.add_argument("-p", action="store_true", default=False,
                              dest="path", help="Common path info")
+    parser_info.add_argument("-t", action="store_true", default=False,
+                             dest="transactions", help="Transactions info")
 
     return parser.parse_args()
 

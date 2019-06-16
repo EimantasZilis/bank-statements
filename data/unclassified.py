@@ -1,7 +1,7 @@
 from data.raw import classify
 from system.file_management import Jdict
 from system.file_management import Statements
-from user_input.commands.info import get_transactions_summary
+from data.summary import get_transactions_summary
 
 categories = Jdict("u_cmappings")
 classified = Statements("classified")
@@ -23,9 +23,7 @@ def process():
             update_unclassified_data(newly_classified)
 
 def show_summary():
-    summary = get_transactions_summary("unclassified")
-    new_count = summary.get("Classified")[1]
-    total_count = summary.get("Total")[1]
+    total_count, new_count, unclassified = get_transactions_summary("Unclassified")
     info = " >> New classifications: {c}/{t}"
     print(info.format(c=new_count, t=total_count))
 
