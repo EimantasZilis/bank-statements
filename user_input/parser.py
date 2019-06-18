@@ -6,21 +6,21 @@ def init_parser():
     available in command prompt for the app """
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="parser")
-    initialise_parser(subparsers)
+    setup_parser(subparsers)
     types_parser(subparsers)
     info_parser(subparsers)
     data_parser(subparsers)
     plotting_parser(subparsers)
     return parser.parse_args()
 
-def initialise_parser(subparsers=None):
-    """ 'initialise' subparser definition """
+def setup_parser(subparsers=None):
+    """ 'setup' subparser definition """
     if subparsers is None:
         return
 
-    parser_init = subparsers.add_parser("initialise", help="Initialise the app")
-    parser_init.add_argument("-s", "--setup", nargs="+", dest="setup",
-                             help="Set up user files in specified directory")
+    parser_init = subparsers.add_parser("setup", help="Setup the app")
+    parser_init.add_argument("-p", nargs="+", dest="path",
+                             help="Set up common path")
 
 def types_parser(subparsers=None):
     """ 'types' subparser definition """
@@ -85,10 +85,10 @@ def process_commands(commands=None):
         import user_input.commands.info as info_cmd
         info_cmd.process(commands)
 
-    if commands.parser == "initialise":
+    if commands.parser == "setup":
         # Process commands for initialising the app
-        import user_input.commands.initialise as init_cmd
-        init_cmd.process(commands)
+        import user_input.commands.setup as setup_cmd
+        setup_cmd.process(commands)
 
     if commands.parser == "categories":
         # Process commands related to categories
