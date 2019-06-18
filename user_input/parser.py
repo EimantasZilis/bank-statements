@@ -31,11 +31,11 @@ def types_parser(subparsers=None):
     parser_types.add_argument("-s", action="store_true", default=False,
                               dest="show", help="Show current categories")
     parser_types.add_argument("-a", type=str, dest="add",
-                              help="Add new (comma-delimited) categories. \
-                              Must have quotes around the list")
+                              help="Add new (comma-delimited) categories")
     parser_types.add_argument("-d", type=str, dest="delete",
-                              help="Delete (comma-delimited) categories. \
-                              Must have quotes around the list.")
+                              help="Delete (comma-delimited) categories")
+    parser_types.add_argument("--bad", action="store_true", default=False,
+                              help="Amend blacklisted categories")
 
 def data_parser(subparsers=None):
     """ 'data' subparser definition """
