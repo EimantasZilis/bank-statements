@@ -14,6 +14,7 @@ def init_parser():
     return parser.parse_args()
 
 def initialise_parser(subparsers=None):
+    """ 'initialise' subparser definition """
     if subparsers is None:
         return
 
@@ -22,6 +23,7 @@ def initialise_parser(subparsers=None):
                              help="Set up user files in specified directory")
 
 def types_parser(subparsers=None):
+    """ 'types' subparser definition """
     if subparsers is None:
         return
 
@@ -36,6 +38,7 @@ def types_parser(subparsers=None):
                               Must have quotes around the list.")
 
 def data_parser(subparsers=None):
+    """ 'data' subparser definition """
     if subparsers is None:
         return
 
@@ -46,6 +49,7 @@ def data_parser(subparsers=None):
                              help="Classify data", dest="classify")
 
 def plotting_parser(subparsers=None):
+    """ 'plot' subparser definition """
     if subparsers is None:
         return
 
@@ -54,6 +58,7 @@ def plotting_parser(subparsers=None):
                              dest="all", help='All')
 
 def info_parser(subparsers=None):
+    """ 'info' subparser definition """
     if subparsers is None:
         return
 
