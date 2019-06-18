@@ -7,7 +7,7 @@ from system.file_management import Statements
 def process(commands=None):
     """ Run commands for 'info' subparser """
     if commands.all:
-        commands.tranasctions = True
+        commands.transactions = True
         commands.categories = True
         commands.path = True
 

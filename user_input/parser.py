@@ -4,15 +4,27 @@ from system.file_management import Jdict
 def init_parser():
     """ Initialise and definte user input commands
     available in command prompt for the app """
-    parser = argparse.ArgumentParser(description='Finances app')
+    parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="parser")
+    initialise_parser(subparsers)
+    types_parser(subparsers)
+    info_parser(subparsers)
+    data_parser(subparsers)
+    plotting_parser(subparsers)
+    return parser.parse_args()
 
-    # Parser for initialising the app
+def initialise_parser(subparsers=None):
+    if subparsers is None:
+        return
+
     parser_init = subparsers.add_parser("initialise", help="Initialise the app")
     parser_init.add_argument("-s", "--setup", nargs="+", dest="setup",
                              help="Set up user files in specified directory")
 
-    # Parser for defining categories
+def types_parser(subparsers=None):
+    if subparsers is None:
+        return
+
     parser_types = subparsers.add_parser("categories", help="Amend categories")
     parser_types.add_argument("-s", action="store_true", default=False,
                               dest="show", help="Show current categories")
@@ -23,17 +35,27 @@ def init_parser():
                               help="Delete (comma-delimited) categories. \
                               Must have quotes around the list.")
 
-    # Parser for data operations
+def data_parser(subparsers=None):
+    if subparsers is None:
+        return
+
     parser_data = subparsers.add_parser("data", help="Process data")
     parser_data.add_argument("-i", action="store_true", default=False,
                              help='Import raw data', dest="migrate")
     parser_data.add_argument("-c", action="store_true", default=False,
                              help="Classify data", dest="classify")
 
-    # Parser for plotting
+def plotting_parser(subparsers=None):
+    if subparsers is None:
+        return
+
     parser_plot = subparsers.add_parser("plot", help="Generate plots")
     parser_plot.add_argument("-a", action="store_true", default=False,
                              dest="all", help='All')
+
+def info_parser(subparsers=None):
+    if subparsers is None:
+        return
 
     parser_info = subparsers.add_parser("info", help="Summary about the app")
     parser_info.add_argument("-a", action="store_true", default=False,
@@ -44,8 +66,6 @@ def init_parser():
                              dest="path", help="Common path info")
     parser_info.add_argument("-t", action="store_true", default=False,
                              dest="transactions", help="Transactions info")
-
-    return parser.parse_args()
 
 def process_commands(commands=None):
     """ Process input command and execute a given option """
