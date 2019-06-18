@@ -42,7 +42,7 @@ To specify common path, execute
 ```
 python main.py setup -p C:\Users\Eimantas\Dropbox\finances
 ```
-where the argument after `-s` specifies the directory.
+where the argument after `-p` specifies the path.
 By running the initialisation command, few things happen.
  - It tells the app the common path is located.
  - It creates relevant directories.
