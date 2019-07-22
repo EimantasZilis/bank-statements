@@ -128,4 +128,4 @@ def validate_common_path(commands):
 def common_path_exists():
     """ Check if common path exists. Returns True/False"""
     cpath = Jdict("u_paths")
-    return cpath.lookup("COMMON") != ""
+    return cpath.lookup("COMMON") is not None

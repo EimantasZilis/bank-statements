@@ -1,6 +1,3 @@
-import data.unclassified
-import data.raw
-
 def process(commands=None):
     """ Run commands for 'data' subparser """
     if commands.migrate:
