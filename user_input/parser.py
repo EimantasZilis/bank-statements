@@ -118,7 +118,7 @@ def validate_common_path(commands):
     if common_path_exists():
         return
 
-    ok_commands = {"initialise" : "setup"}
+    ok_commands = {"setup"}
     ok_command = ok_commands.get(commands.parser)
     if ok_command is None:
         err = "Common path is not defined\n" \
