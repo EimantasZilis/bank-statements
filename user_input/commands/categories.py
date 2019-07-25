@@ -73,6 +73,12 @@ class AmendCategories:
         else:
             return "CATEGORIES"
 
+    def recalculate_data(self):
+        """ Reprocess statements data if
+        reprocess flag is set."""
+        if self.reprocess_data:
+            reprocess_raw_data("\nRe-processing raw data...")
+
 class Create(AmendCategories):
     """ Class for creating new categories """
     def __init__(self, params, blacklist):
@@ -85,7 +91,7 @@ class Create(AmendCategories):
             self.validate_new_categories()
             super().show_info("Adding")
             self.update_categories_config()
-            reprocess_raw_data("\nRe-processing raw data...")
+            super().recalculate_data()
         except ValueError as error:
             print(error)
 
@@ -122,7 +128,7 @@ class Delete(AmendCategories):
             super().show_info("Deleting")
             self.delete_references_to_mappings()
             self.delete_categories_from_config()
-            reprocess_raw_data("\nRe-processing raw data...")
+            super().recalculate_data()
         except ValueError as error:
             print(error)
 
