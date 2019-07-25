@@ -57,7 +57,11 @@ class AmendCategories:
         if not self.existing_categories:
             self.reprocess_data = False
 
-    def show_actionable_categories(self):
+    def show_info(self, action):
+        if self.blacklist:
+            print("{} blacklisted categories...".format(action))
+        else:
+            print("{} categories...".format(action))
         for category in self.action_categories:
             print(" >>", category)
 
@@ -78,9 +82,8 @@ class Create(AmendCategories):
     def do_it(self):
         """ Create new categories """
         try:
-            self.show_info()
             self.validate_new_categories()
-            self.show_actionable_categories()
+            super().show_info("Adding")
             self.update_categories_config()
             reprocess_raw_data("\nRe-processing raw data...")
         except ValueError as error:
@@ -106,12 +109,6 @@ class Create(AmendCategories):
         self.config.extend(ltype, self.action_categories)
         self.config.write()
 
-    def show_info(self):
-        if self.blacklist:
-            print("Adding categories...")
-        else:
-            print("Adding blacklisted categories...")
-
 class Delete(AmendCategories):
     """ Class for deleting existing categories """
     def __init__(self, params, blacklist):
@@ -121,9 +118,8 @@ class Delete(AmendCategories):
     def do_it(self):
         """ Delete categories """
         try:
-            self.show_info()
             self.validate_categories_to_delete()
-            self.show_actionable_categories()
+            super().show_info("Deleting")
             self.delete_references_to_mappings()
             self.delete_categories_from_config()
             reprocess_raw_data("\nRe-processing raw data...")
@@ -161,9 +157,3 @@ class Delete(AmendCategories):
             cmappings.pop(category)
         cmappings.transpose()
         cmappings.write()
-
-    def show_info(self):
-        if self.blacklist:
-            print("Deleting blacklisted categories...")
-        else:
-            print("Deleting categories...")
