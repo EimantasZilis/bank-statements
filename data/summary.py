@@ -10,7 +10,9 @@ def get_categories_summary():
     used with each one """
     classified = Statements("classified")
     ucategories = Jdict("u_categories")
-    categories = ucategories.lookup("CATEGORIES")
+    ok_categories = ucategories.lookup("CATEGORIES")
+    bad_categories = ucategories.lookup("BLACKLIST")
+    categories = ok_categories + bad_categories
     if categories is None:
         return None
 
