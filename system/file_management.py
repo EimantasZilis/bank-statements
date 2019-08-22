@@ -266,6 +266,9 @@ class Jdict(File):
     def items(self):
         return self.dict.items()
 
+    def values(self):
+        return self.dict.values()
+
 class XlsxFile(File):
     """ A class for manipulating Xlsx file properties and layout """
     mandatory_columns = ("Date", "Amount")
@@ -355,7 +358,8 @@ class XlsxFile(File):
         It checks "source" tag for "CATEGORIES" string. It will
         replace it with the list of categories if it finds one """
         categories_config = Jdict("u_categories")
-        categories = categories_config.lookup("CATEGORIES")
+        categories = [cat for cats in categories_config.values() for cat in cats]
+        #categories = categories_config.lookup("CATEGORIES")
         lookup_dropdown = ["STYLING", "COLUMN"]
 
         for col_num, name in enumerate(df.columns.values):
