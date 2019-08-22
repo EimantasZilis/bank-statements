@@ -25,12 +25,14 @@ def show_common_path():
 
 def show_categories_summary():
     """ Show categories summary"""
-    categories_info = get_categories_summary()
-    print("\nCategories")
-    if categories_info is None:
-        print(" >> Categories not defined")
-    else:
-        categories_info.show(" >> ")
+    cats = {"CATEGORIES": "Categories", "BLACKLIST": "Blacklisted categories"}
+    for code, desc in cats.items():
+        categories_info = get_categories_summary(code)
+        print("\n{}".format(desc))
+        if categories_info is None:
+            print(" >> {} not defined".format(desc))
+        else:
+            categories_info.show(" >> ")
 
 def show_transactions_summary():
     """ Show transactions summary"""
