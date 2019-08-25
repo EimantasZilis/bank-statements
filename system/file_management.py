@@ -269,13 +269,17 @@ class Jdict(File):
     def values(self):
         return self.dict.values()
 
-class XlsxFile(File):
-    """ A class for manipulating Xlsx file properties and layout """
+class Excel(File):
+    """ A class for working with .xlsx files.
+    It stores data in pandas dataframe for data
+    manipulation and combines xlsxwriter for file I/O """
+
     mandatory_columns = ("Date", "Amount")
 
-    def __init__(self, filename=None, type='', df=None):
+    def __init__(self, filename=None, type='D', df=None):
         super().__init__(filename=filename, type=type)
         self.df = df
+        self.pre_read_validation()
 
     def read(self, sheet="Sheet1"):
         """ Read categories from .xlsx file. Initialise
@@ -325,10 +329,10 @@ class XlsxFile(File):
         Columns "None" in mand_cols are ignored. """
 
         if mand_cols is None:
-            all_mand_cols = list(XlsxFile.mandatory_columns)
+            all_mand_cols = list(Excel.mandatory_columns)
         else:
             all_mand_cols = [col for col in mand_cols if col is not None]
-            all_mand_cols.extend(XlsxFile.mandatory_columns)
+            all_mand_cols.extend(Excel.mandatory_columns)
 
         xlsx_set = set(self.df.columns.values)
         mand_set = set(all_mand_cols)
@@ -408,11 +412,10 @@ class XlsxFile(File):
         else:
             return df
 
-class XlsxData(XlsxFile):
-    """ A class for working with Xlsx file data """
-
-    def __init__(self, filename=None, type='', df=None):
-        super().__init__(filename=filename, type=type, df=df)
+    def pre_read_validation(self):
+        """ Do validation before file is read. """
+        self.expected_extension = ".xlsx"
+        self.validate_file_extension()
 
     def set_datetime(self, column=None, format=None):
         """ Converts a column to datetime with a given format.
@@ -532,7 +535,7 @@ class XlsxData(XlsxFile):
         """ Get attribute values from a dataframe"""
         return getattr(self.df, attribute)
 
-    def set(self, attribute, values):
+    def set_values(self, attribute, values):
         """ Set values to an attribute
         within a dataframe """
         self.df[attribute] = values
@@ -569,19 +572,6 @@ class XlsxData(XlsxFile):
     def dropna(self, axis=0, subset=None, how='all', inplace=True):
         return self.df.dropna(axis=axis, how=how, subset=subset, inplace=inplace)
 
-class Excel(XlsxData):
-    """ A class for working with .xlsx files.
-    It stores data in pandas dataframe for data
-    manipulation and combines xlsxwriter for file I/O """
-
-    def __init__(self, filename=None, type='D', df=None):
-        super().__init__(filename=filename, type=type, df=df)
-        self.pre_read_validation()
-
-    def pre_read_validation(self):
-        """ Do validation before file is read. """
-        self.expected_extension = ".xlsx"
-        self.validate_file_extension()
 
 class Statements(Excel):
     """ A class for working with bank statements """

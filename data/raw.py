@@ -71,7 +71,7 @@ def classify(raw_data):
     categories = Jdict("u_cmappings")
     types = raw_data.get_attr("Info").apply(
         lambda x: categories.lookup(x, default=""))
-    raw_data.set("Type", types)
+    raw_data.set_values("Type", types)
 
 def drop_blacklisted_transactions(raw_data):
     """ Remove transactions that have type 'BLACKLIST' """
