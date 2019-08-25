@@ -14,8 +14,7 @@ def migrate():
     and classify transactions based on the known,
     classified transactions """
 
-    raw_data = Excel("raw")
-    raw_data.initialise()
+    raw_data = Excel("raw", read_file=True)
     if raw_data.is_blank():
         print(" >> {} is empty".format(raw_data.filename))
         return

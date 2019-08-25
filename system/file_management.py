@@ -111,9 +111,9 @@ class Jdict(File):
     def __init__(self, Filename=None, Type='', dict=None, system_file=True):
         super().__init__(filename=Filename, type=Type, system_file=system_file)
         self.dict = dict
-        self.initialise()
+        self.init_jdict()
 
-    def initialise(self):
+    def init_jdict(self):
         """ Initialise file """
         self.pre_read_validation()
         self.read()
@@ -276,21 +276,23 @@ class Excel(File):
 
     mandatory_columns = ("Date", "Amount")
 
-    def __init__(self, filename=None, type='D', df=None):
+    def __init__(self, filename=None, type='D', df=None, read_file=False):
         super().__init__(filename=filename, type=type)
         self.df = df
+        self.init_excel(mand_cols=None, read_file=read_file)
+
+    def init_excel(self, mand_cols=None, read_file=False):
+        """ Initialise the dataframe
+        Read the file and validate it. """
         self.pre_read_validation()
+        if read_file:
+            self.read()
+            self.post_read_validation(mand_cols)
 
     def pre_read_validation(self):
         """ Do validation before file is read. """
         self.expected_extension = ".xlsx"
         super().validate_file_extension()
-
-    def initialise(self, mand_cols=None):
-        """ Initialise the dataframe
-        Read the file and validate it. """
-        self.read()
-        self.post_read_validation(mand_cols)
 
     def read(self, sheet="Sheet1"):
         """ Read categories from .xlsx file. Initialise
@@ -578,9 +580,9 @@ class Statements(Excel):
 
     def __init__(self, filename=None, type='D', df=None):
         super().__init__(filename=filename, type=type, df=df)
-        self.initialise()
+        self.init_statements()
 
-    def initialise(self):
+    def init_statements(self):
         """ Initialise Statements"""
         self.read()
         self.post_read_validation()
