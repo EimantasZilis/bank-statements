@@ -359,7 +359,7 @@ class XlsxFile(File):
         replace it with the list of categories if it finds one """
         categories_config = Jdict("u_categories")
         categories = [cat for cats in categories_config.values() for cat in cats]
-        #categories = categories_config.lookup("CATEGORIES")
+        categories.sort()
         lookup_dropdown = ["STYLING", "COLUMN"]
 
         for col_num, name in enumerate(df.columns.values):
