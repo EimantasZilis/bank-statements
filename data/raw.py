@@ -40,7 +40,6 @@ def validate(raw_data):
 
     remove_returns(raw_data)
     classify(raw_data)
-    drop_blacklisted_transactions(raw_data)
 
     if not raw_data.is_blank():
         raw_data.write_as(new_name="classified.xlsx", new_type="D")
