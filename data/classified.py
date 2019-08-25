@@ -1,4 +1,4 @@
-from system.file_management import Statements
+from system.file_management import Statements, Jdict
 
 """ a module for working with classified data.
 It uses data from classified.xlsx and removes
@@ -22,3 +22,10 @@ def add_date_cols(df):
     df.set("Week", date_col.map(lambda dt: dt.isocalendar()[1]))
     df.set("YearMonth", date_col.map(lambda dt: dt.replace(day=1)))
     df.set("Year", date_col.map(lambda dt: dt.replace(month=1,day=1)))
+
+def remove_blacklist(data):
+    """ Remove blacklisted data from dataframe"""
+    categories = Jdict("u_categories")
+    blacklist = categories.lookup("BLACKLIST")
+    bad_data = data.get_attr("Type").isin(blacklist)
+    data.filter(~bad_data, inplace=True)
