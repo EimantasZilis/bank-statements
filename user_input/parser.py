@@ -4,36 +4,63 @@ from system.file_management import Jdict
 def init_parser():
     """ Initialise and definte user input commands
     available in command prompt for the app """
-    parser = argparse.ArgumentParser(description='Finances app')
+    parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="parser")
+    setup_parser(subparsers)
+    types_parser(subparsers)
+    info_parser(subparsers)
+    data_parser(subparsers)
+    plotting_parser(subparsers)
+    return parser.parse_args()
 
-    # Parser for initialising the app
-    parser_init = subparsers.add_parser("initialise", help="Initialise the app")
-    parser_init.add_argument("-s", "--setup", nargs="+", dest="setup",
-                             help="Set up user files in specified directory")
+def setup_parser(subparsers=None):
+    """ 'setup' subparser definition """
+    if subparsers is None:
+        return
 
-    # Parser for defining categories
+    parser_init = subparsers.add_parser("setup", help="Setup the app")
+    parser_init.add_argument("-p", nargs="+", dest="path",
+                             help="Set up common path")
+
+def types_parser(subparsers=None):
+    """ 'types' subparser definition """
+    if subparsers is None:
+        return
+
     parser_types = subparsers.add_parser("categories", help="Amend categories")
     parser_types.add_argument("-s", action="store_true", default=False,
                               dest="show", help="Show current categories")
     parser_types.add_argument("-a", type=str, dest="add",
-                              help="Add new (comma-delimited) categories. \
-                              Must have quotes around the list")
+                              help="Add new (comma-delimited) categories")
     parser_types.add_argument("-d", type=str, dest="delete",
-                              help="Delete (comma-delimited) categories. \
-                              Must have quotes around the list.")
+                              help="Delete (comma-delimited) categories")
+    parser_types.add_argument("--bad", action="store_true", default=False,
+                              help="Amend blacklisted categories")
 
-    # Parser for data operations
+def data_parser(subparsers=None):
+    """ 'data' subparser definition """
+    if subparsers is None:
+        return
+
     parser_data = subparsers.add_parser("data", help="Process data")
     parser_data.add_argument("-i", action="store_true", default=False,
                              help='Import raw data', dest="migrate")
     parser_data.add_argument("-c", action="store_true", default=False,
                              help="Classify data", dest="classify")
 
-    # Parser for plotting
+def plotting_parser(subparsers=None):
+    """ 'plot' subparser definition """
+    if subparsers is None:
+        return
+
     parser_plot = subparsers.add_parser("plot", help="Generate plots")
     parser_plot.add_argument("-a", action="store_true", default=False,
                              dest="all", help='All')
+
+def info_parser(subparsers=None):
+    """ 'info' subparser definition """
+    if subparsers is None:
+        return
 
     parser_info = subparsers.add_parser("info", help="Summary about the app")
     parser_info.add_argument("-a", action="store_true", default=False,
@@ -44,8 +71,6 @@ def init_parser():
                              dest="path", help="Common path info")
     parser_info.add_argument("-t", action="store_true", default=False,
                              dest="transactions", help="Transactions info")
-
-    return parser.parse_args()
 
 def process_commands(commands=None):
     """ Process input command and execute a given option """
@@ -60,10 +85,10 @@ def process_commands(commands=None):
         import user_input.commands.info as info_cmd
         info_cmd.process(commands)
 
-    if commands.parser == "initialise":
+    if commands.parser == "setup":
         # Process commands for initialising the app
-        import user_input.commands.initialise as init_cmd
-        init_cmd.process(commands)
+        import user_input.commands.setup as setup_cmd
+        setup_cmd.process(commands)
 
     if commands.parser == "categories":
         # Process commands related to categories
@@ -93,7 +118,7 @@ def validate_common_path(commands):
     if common_path_exists():
         return
 
-    ok_commands = {"initialise" : "setup"}
+    ok_commands = {"setup"}
     ok_command = ok_commands.get(commands.parser)
     if ok_command is None:
         err = "Common path is not defined\n" \
@@ -103,4 +128,4 @@ def validate_common_path(commands):
 def common_path_exists():
     """ Check if common path exists. Returns True/False"""
     cpath = Jdict("u_paths")
-    return cpath.lookup("COMMON") != ""
+    return cpath.lookup("COMMON") is not None

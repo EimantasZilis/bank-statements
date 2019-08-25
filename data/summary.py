@@ -4,13 +4,14 @@ from system.file_management import Statements
 """ A module for getting information about
 transactions and their summaries"""
 
-def get_categories_summary():
+def get_categories_summary(ctype="CATEGORIES"):
     """ Gets information about defined categories.
     Shows their names and a number of transactions
-    used with each one """
+    used with each one. Use ctype="BLACKLIST" to
+    return summary for blacklisted categories"""
     classified = Statements("classified")
     ucategories = Jdict("u_categories")
-    categories = ucategories.lookup("CATEGORIES")
+    categories = ucategories.lookup(ctype)
     if categories is None:
         return None
 

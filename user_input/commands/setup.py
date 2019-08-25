@@ -4,10 +4,10 @@ from system.file_management import Jdict
 from system.file_management import path_exists_or_is_creatable
 
 def process(commands=None):
-    """ Run commands for 'initialise' subparser """
-    if commands.setup:
-        print("Initialising user files and folders...")
-        setup_path(commands.setup[0])
+    """ Run commands for 'setup' subparser """
+    if commands.path:
+        print("Setting up common path...")
+        setup_path(commands.path[0])
         setup_files_and_dirs()
 
 def setup_path(common_path):

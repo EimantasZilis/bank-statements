@@ -6,18 +6,20 @@ from user_input.commands.data import migrate as reprocess_raw_data
 
 def process(command=None):
     """ Run commands for 'categories' subparser """
+
     if command.delete:
-        Delete(command.delete)
+        Delete(command.delete, command.bad)
     if command.add:
-        Create(command.add)
+        Create(command.add, command.bad)
     if command.show:
         show_categories_summary()
 
-class AmendCategories():
+class AmendCategories:
     """ Base class for amending categories"""
-    def __init__(self, params=None):
+    def __init__(self, params=None, blacklist=False):
         self.existing_categories = None
         self.action_categories = None
+        self.blacklist = blacklist
         self.reprocess_data = True
         self.params = params
         self.config = None
@@ -35,12 +37,14 @@ class AmendCategories():
 
     def initialise_existing_categories(self):
         self.config = Jdict("u_categories")
-        self.existing_categories = self.config.lookup("CATEGORIES")
+        ltype = self.lookup_type()
+        self.existing_categories = self.config.lookup(ltype)
 
     def parse_params(self):
         """ Validate params and parse it into action_categories.
         It does it by separating comma-delimited categories into a
         list and remove any blank strings. """
+
         categories = self.params.split(",")
         self.action_categories = list(filter(None, categories))
         if not self.action_categories:
@@ -53,24 +57,41 @@ class AmendCategories():
         if not self.existing_categories:
             self.reprocess_data = False
 
-    def show_actionable_categories(self):
+    def show_info(self, action):
+        if self.blacklist:
+            print("{} blacklisted categories...".format(action))
+        else:
+            print("{} categories...".format(action))
         for category in self.action_categories:
             print(" >>", category)
 
+    def lookup_type(self):
+        """ Get lookup type for u_categories.json depending
+        if it is looking at blacklisted categories """
+        if self.blacklist:
+            return "BLACKLIST"
+        else:
+            return "CATEGORIES"
+
+    def recalculate_data(self):
+        """ Reprocess statements data if
+        reprocess flag is set."""
+        if self.reprocess_data:
+            reprocess_raw_data("\nRe-processing raw data...")
+
 class Create(AmendCategories):
     """ Class for creating new categories """
-    def __init__(self, params):
-        super().__init__(params=params)
+    def __init__(self, params, blacklist):
+        super().__init__(params=params, blacklist=blacklist)
         self.do_it()
 
     def do_it(self):
         """ Create new categories """
-        print("Adding new categories...")
         try:
             self.validate_new_categories()
-            self.show_actionable_categories()
+            super().show_info("Adding")
             self.update_categories_config()
-            reprocess_raw_data("\nRe-processing raw data...")
+            super().recalculate_data()
         except ValueError as error:
             print(error)
 
@@ -90,24 +111,24 @@ class Create(AmendCategories):
 
     def update_categories_config(self):
         """ Create new categories and add to config.json"""
-        self.config.extend("CATEGORIES", self.action_categories)
+        ltype = super().lookup_type()
+        self.config.extend(ltype, self.action_categories)
         self.config.write()
 
 class Delete(AmendCategories):
     """ Class for deleting existing categories """
-    def __init__(self, params):
-        super().__init__(params=params)
+    def __init__(self, params, blacklist):
+        super().__init__(params=params, blacklist=blacklist)
         self.do_it()
 
     def do_it(self):
         """ Delete categories """
-        print("Deleting categories...")
         try:
             self.validate_categories_to_delete()
-            self.show_actionable_categories()
+            super().show_info("Deleting")
             self.delete_references_to_mappings()
             self.delete_categories_from_config()
-            reprocess_raw_data("\nRe-processing raw data...")
+            super().recalculate_data()
         except ValueError as error:
             print(error)
 
@@ -129,7 +150,8 @@ class Delete(AmendCategories):
         """ Delete categories from config.json """
         updated = [cat for cat in self.existing_categories
                    if cat not in self.action_categories]
-        self.config.update("CATEGORIES", updated)
+        ltype = super().lookup_type()
+        self.config.update(ltype, updated)
         self.config.write()
 
     def delete_references_to_mappings(self):
