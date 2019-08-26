@@ -1,13 +1,3 @@
-- Initialise the project
-    - Add validation to Raw.xlsx file during initialisation?
-    - update readme
-        - Include requirements
-    - Initialise files once and make it accessible across the app
-    - Make BLACKLIST to be a list of types
-
 - Write unit tests
+- Develop Django front end
 - Refactor plotting s/w
-- Develop dash-based front end
-    - Research how plotly works
-    - Develop generic framework to be used with plotly
-    - Write s/w
