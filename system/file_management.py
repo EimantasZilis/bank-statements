@@ -111,9 +111,9 @@ class Jdict(File):
     def __init__(self, Filename=None, Type='', dict=None, system_file=True):
         super().__init__(filename=Filename, type=Type, system_file=system_file)
         self.dict = dict
-        self.initialise()
+        self.init_jdict()
 
-    def initialise(self):
+    def init_jdict(self):
         """ Initialise file """
         self.pre_read_validation()
         self.read()
@@ -269,26 +269,63 @@ class Jdict(File):
     def values(self):
         return self.dict.values()
 
-class XlsxFile(File):
-    """ A class for manipulating Xlsx file properties and layout """
+class Excel(File):
+    """ A class for working with .xlsx files.
+    It stores data in pandas dataframe for data
+    manipulation and combines xlsxwriter for file I/O """
+
     mandatory_columns = ("Date", "Amount")
 
-    def __init__(self, filename=None, type='', df=None):
+    def __init__(self, filename=None, type='D', df=None, read_file=False):
         super().__init__(filename=filename, type=type)
         self.df = df
+        self.init_excel(mand_cols=None, read_file=read_file)
+
+    def init_excel(self, mand_cols=None, read_file=False):
+        """ Initialise the dataframe
+        Read the file and validate it. """
+        self.pre_read_validation()
+        if read_file:
+            self.read()
+            self.post_read_validation(mand_cols)
+
+    def pre_read_validation(self):
+        """ Do validation before file is read. """
+        self.expected_extension = ".xlsx"
+        super().validate_file_extension()
 
     def read(self, sheet="Sheet1"):
         """ Read categories from .xlsx file. Initialise
         the dataframe with mandatory_columns if the file
         does not exist. """
         try:
-            fp = self.file_pointer()
+            fp = super().file_pointer()
             self.df = pd.read_excel(fp, sheet_name=sheet)
         except FileNotFoundError:
-            cols = {col: [] for col in XlsxFile.mandatory_columns}
+            cols = {col: [] for col in Excel.mandatory_columns}
             self.df = pd.DataFrame(cols)
 
-    def write_validation(self, file_pointer=None, overwrite_check=False):
+    def post_read_validation(self, mand_cols=None):
+        """ Check if dataframe meets expected format.
+        It must have all mandatory columns including the ones
+        specified in mand_cols.
+        Columns "None" in mand_cols are ignored. """
+
+        if mand_cols is None:
+            all_mand_cols = list(Excel.mandatory_columns)
+        else:
+            all_mand_cols = [col for col in mand_cols if col is not None]
+            all_mand_cols.extend(Excel.mandatory_columns)
+
+        xlsx_set = set(self.df.columns.values)
+        mand_set = set(all_mand_cols)
+        missing_cols = mand_set - xlsx_set
+        if missing_cols:
+            err_msg = "Mandatory column(s) not found in "
+            err_txt = [err_msg, self.filename, ": ", ", ".join(missing_cols)]
+            raise ValueError("".join(err_txt))
+
+    def pre_write_validation(self, file_pointer=None, overwrite_check=False):
         """ Do validation prior to writing the file. Throw
         exceptions if it fails any validations """
         if overwrite_check:
@@ -301,7 +338,7 @@ class XlsxFile(File):
             # Get default file pointer if it isn't specified
             file_pointer = self.file_pointer()
 
-        self.write_validation(file_pointer, overwrite_check)
+        self.pre_write_validation(file_pointer, overwrite_check)
         writer = pd.ExcelWriter(file_pointer, engine="xlsxwriter",
                                 datetime_format='dd mmm yyyy')
         temp_df = self.reset_index(self.df)
@@ -317,32 +354,6 @@ class XlsxFile(File):
         """ Rename the file and write to it. """
         self.rename(new_name, new_type)
         self.write()
-
-    def validate(self, mand_cols=None):
-        """ Check if dataframe meets expected format.
-        It must have all mandatory columns including the ones
-        specified in mand_cols.
-        Columns "None" in mand_cols are ignored. """
-
-        if mand_cols is None:
-            all_mand_cols = list(XlsxFile.mandatory_columns)
-        else:
-            all_mand_cols = [col for col in mand_cols if col is not None]
-            all_mand_cols.extend(XlsxFile.mandatory_columns)
-
-        xlsx_set = set(self.df.columns.values)
-        mand_set = set(all_mand_cols)
-        missing_cols = mand_set - xlsx_set
-        if missing_cols:
-            err_msg = "Mandatory column(s) not found in "
-            err_txt = [err_msg, self.filename, ": ", ", ".join(missing_cols)]
-            raise ValueError("".join(err_txt))
-
-    def initialise(self, mand_cols=None):
-        """ Initialise the dataframe
-        Read the file and validate it. """
-        self.read()
-        self.validate(mand_cols)
 
     def apply_styles(self, df, wsheet, wbook):
         """ Apply styles to xlsx spreadsheet. """
@@ -407,12 +418,6 @@ class XlsxFile(File):
             return df.reset_index()
         else:
             return df
-
-class XlsxData(XlsxFile):
-    """ A class for working with Xlsx file data """
-
-    def __init__(self, filename=None, type='', df=None):
-        super().__init__(filename=filename, type=type, df=df)
 
     def set_datetime(self, column=None, format=None):
         """ Converts a column to datetime with a given format.
@@ -532,7 +537,7 @@ class XlsxData(XlsxFile):
         """ Get attribute values from a dataframe"""
         return getattr(self.df, attribute)
 
-    def set(self, attribute, values):
+    def set_values(self, attribute, values):
         """ Set values to an attribute
         within a dataframe """
         self.df[attribute] = values
@@ -569,28 +574,18 @@ class XlsxData(XlsxFile):
     def dropna(self, axis=0, subset=None, how='all', inplace=True):
         return self.df.dropna(axis=axis, how=how, subset=subset, inplace=inplace)
 
-class Excel(XlsxData):
-    """ A class for working with .xlsx files.
-    It stores data in pandas dataframe for data
-    manipulation and combines xlsxwriter for file I/O """
-
-    def __init__(self, filename=None, type='D', df=None):
-        super().__init__(filename=filename, type=type, df=df)
-        self.pre_read_validation()
-
-    def pre_read_validation(self):
-        """ Do validation before file is read. """
-        self.expected_extension = ".xlsx"
-        self.validate_file_extension()
-
 class Statements(Excel):
     """ A class for working with bank statements """
     mandatory_columns = ("ID", "Type")
 
     def __init__(self, filename=None, type='D', df=None):
         super().__init__(filename=filename, type=type, df=df)
+        self.init_statements()
+
+    def init_statements(self):
+        """ Initialise Statements"""
         self.read()
-        self.validate()
+        self.post_read_validation()
 
     def read(self, Sheet="Sheet1"):
         """ Read the .xlsx file. If the dataframe is not
@@ -603,12 +598,12 @@ class Statements(Excel):
                 if col not in current_columns:
                     self.df[col] = None
 
-    def validate(self, mand_cols=None):
+    def post_read_validation(self, mand_cols=None):
         """ Check if statements xlsx file meets the expected format.
         Check mandatory columns and set ID as an index column. """
         if mand_cols is None:
             mand_cols = Statements.mandatory_columns
-        super().validate(mand_cols)
+        super().post_read_validation(mand_cols)
         self.df.set_index("ID", inplace=True)
 
     def select_by(self, column, value=None, statement=True):

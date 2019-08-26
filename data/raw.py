@@ -14,8 +14,7 @@ def migrate():
     and classify transactions based on the known,
     classified transactions """
 
-    raw_data = Excel("raw")
-    raw_data.initialise()
+    raw_data = Excel("raw", read_file=True)
     if raw_data.is_blank():
         print(" >> {} is empty".format(raw_data.filename))
         return
@@ -71,7 +70,7 @@ def classify(raw_data):
     categories = Jdict("u_cmappings")
     types = raw_data.get_attr("Info").apply(
         lambda x: categories.lookup(x, default=""))
-    raw_data.set("Type", types)
+    raw_data.set_values("Type", types)
 
 def drop_blacklisted_transactions(raw_data):
     """ Remove transactions that have type 'BLACKLIST' """
