@@ -19,13 +19,7 @@ and create insights into your budget.
 ## 1. Installation
 ### 1.1 Minimum requirements
    - Excel (2013)
-   - Argparse (1.1)
-   - Json (2.0.9)
-   - Matplotlib
-   - Numpy (1.15.1)
-   - Pandas (0.24.1)
    - Python (3.6.0)
-   - XlsxWriter (1.1.5)
 
 ## 2. Configuration
 The app is dependant on data from bank statements. So in order to use the app
