@@ -1,7 +1,7 @@
 import pandas as pd
 from system.file_management import Excel
 from system.file_management import Jdict
-from system.file_management import path_exists_or_is_creatable
+from system.file_management import Path
 
 def process(commands=None):
     """ Run commands for 'setup' subparser """
@@ -21,7 +21,8 @@ def get_upaths():
     return Jdict("u_paths")
 
 def validate_path(path):
-    if not path_exists_or_is_creatable(path):
+    user_path = Path(path)
+    if not user_path.exists_or_is_creatable():
         err = "{} is not a valid path\n >> Enter a different path"
         raise ValueError(err.format(path))
 

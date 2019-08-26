@@ -2,6 +2,26 @@ import os
 import json
 import pandas as pd
 
+class Path:
+    """ Class for path handling"""
+    def __init__(self, path):
+        self.path = path
+
+    def init_dirs(self):
+        """ Initialise relevant directories """
+        os.makedirs(self.path, exist_ok=True)
+
+    def exists_or_is_creatable(self):
+        """ Check if path exists of is creatable"""
+        if not isinstance(self.path, str) or not self.path:
+            return False
+        try:
+            exists = os.path.exists(self.path)
+            creatable = os.access(os.path.dirname(self.path), os.W_OK)
+            return exists or creatable
+        except OSError:
+            return False
+
 class File:
     """ Class for initialising and handling user files """
     types = {'D': "Data", "P": "Plot"}
@@ -20,7 +40,9 @@ class File:
         It also creates relevant directories if required. """
         if self.filename is not None:
             self.parse_inputs(self.filename, self.type)
-            self.init_dirs()
+            fp = self.file_pointer(with_file=False)
+            path = Path(fp)
+            path.init_dirs()
 
     def get_type_name(self):
         """ Return type name based on code. """
@@ -31,11 +53,6 @@ class File:
         the data into filename, subfolders and type """
         self.subfolders, self.filename = os.path.split(filename)
         self.type = File.types.get(type_code, "")
-
-    def init_dirs(self):
-        """ Initialise relevant directories """
-        fp = self.file_pointer(with_file=False)
-        os.makedirs(fp, exist_ok=True)
 
     def base_path(self):
         """ Return base path for the output depending on
@@ -622,12 +639,3 @@ class Statements(Excel):
             return Statements(df=selection.reset_index())
         else:
             return selection
-
-def path_exists_or_is_creatable(path):
-    """ Check if path exists of is creatable"""
-    if not isinstance(path, str) or not path:
-        return False
-    try:
-        return os.path.exists(path) or os.access(os.path.dirname(path), os.W_OK)
-    except OSError:
-        return False
