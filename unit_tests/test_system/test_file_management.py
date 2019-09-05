@@ -3,17 +3,33 @@ import pathlib
 import pytest
 import shutil
 import tempfile
+import datetime
 
-from system.file_management import Path
+from system.file_management import Path, File, Jdict
 
 
 USERPATH = str(pathlib.Path.home())
 
 @pytest.fixture
 def temp_new_dir():
+    """ Setup a new temporary directory during setup.
+    Remove temporary directory during teardown. """
     dirpath = tempfile.mkdtemp()
     yield dirpath
     shutil.rmtree(dirpath)
+
+@pytest.fixture(scope='function')
+def upath(temp_new_dir):
+    """ Setup a new temporary directory and set it as the
+    user path. Re-instate the previous user path
+    during teardown. """
+    config = Jdict("u_paths")
+    common_path = config.lookup("COMMON")
+    config.update("COMMON", temp_new_dir)
+    config.write()
+    yield temp_new_dir
+    config.update("COMMON", common_path)
+    config.write()
 
 class TestPath:
     creatable = [False, False, False, False, False, True, True]
@@ -25,11 +41,11 @@ class TestPath:
         return Path(path)
 
     @pytest.mark.parametrize("path", paths)
-    def test_var_path(self, object, path):
+    def test_var_path(self, upath, object, path):
         assert object.path == path
 
     @pytest.mark.parametrize("path,tcreatable", list(zip(paths, creatable)))
-    def test_fx_exists_or_is_creatable(self, object, tcreatable):
+    def test_fx_exists_or_is_creatable(self, upath, object, tcreatable):
         assert object.exists_or_is_creatable() == tcreatable
 
     def path_fx_init_dirs(self, dir, prev_expected, now_expected):
