@@ -61,3 +61,66 @@ class TestPath:
     def test_fx_init_dirs_2_new(self, temp_new_dir):
         newpath = os.path.join(temp_new_dir, "subfolder")
         self.path_fx_init_dirs(newpath, False, True)
+
+
+class TestFile:
+    type_mappings = [("", ""), ("D", "Data"), ("P", "Plot"), ("X", "")]
+    types = ["", "D", "P", "X"]
+    fnames = ["sysfile.txt", "datafile.txt", "plotfile.txt", "xfile.txt"]
+    sfiles = [True, False, False, True]
+
+    @pytest.fixture
+    def bpath(self, upath, sysfile):
+        system_path = os.path.join(os.getcwd(), "system", "configuration")
+        mapping = {True: system_path, False: upath}
+        return mapping[sysfile]
+
+    def test_var_expected_extension(self):
+        file_object = File()
+        assert file_object.expected_extension == None
+
+    @pytest.mark.parametrize("sfile", sfiles)
+    def test_var_system_file(self, sfile):
+        file_object = File(system_file=sfile)
+        assert file_object.system_file == sfile
+
+    @pytest.mark.parametrize("sysfile", sfiles)
+    def test_fx_base_path(self, upath, sysfile, bpath):
+        file_object = File(system_file=sysfile)
+        assert file_object.base_path() == bpath
+
+    @pytest.mark.parametrize("sysfile", [True, False])
+    @pytest.mark.parametrize("subdirs", ["", "sub1", "sub1\\sub2"])
+    @pytest.mark.parametrize("tid,ftype", type_mappings)
+    def test_fx_file_pointer_with_file(self, bpath, sysfile, ftype, tid, subdirs):
+        filename = "somefile.txt"
+        filepath = os.path.join(subdirs, filename)
+        file_object = File(filepath, tid, sysfile)
+        expected = os.path.join(bpath, ftype, subdirs, filename)
+        assert file_object.file_pointer() == expected
+
+    @pytest.mark.parametrize("sysfile", [True, False])
+    @pytest.mark.parametrize("subdirs", ["", "sub1", "sub1\\sub2"])
+    @pytest.mark.parametrize("tid,ftype", type_mappings)
+    def test_fx_file_pointer_without_file(self, bpath, sysfile, ftype, tid, subdirs):
+        filename = "somefile.txt"
+        filepath = os.path.join(subdirs, filename)
+        file_object = File(filepath, tid, sysfile)
+        expected = os.path.join(bpath, ftype, subdirs)
+        assert file_object.file_pointer(False) == expected
+
+    @pytest.mark.parametrize("filename", ["", "somefile.txt"])
+    @pytest.mark.parametrize("subdirs", ["", "sub1", "sub1\\sub2"])
+    @pytest.mark.parametrize("tid,ftype", type_mappings)
+    def test_fx_parse_inputs(self, upath, filename, subdirs, ftype, tid):
+        filepath = os.path.join(subdirs, filename)
+        file_object = File(filepath, tid)
+        file_check = file_object.filename == filename
+        subfolders_check = file_object.subfolders == subdirs
+        type_check = file_object.type == ftype
+        assert file_check and subfolders_check and type_check
+
+    @pytest.mark.parametrize("type_id,filetype", type_mappings)
+    def test_fx_get_type_name(self, upath, filetype, type_id):
+        file_object = File(type=type_id)
+        assert file_object.get_type_name() == filetype
