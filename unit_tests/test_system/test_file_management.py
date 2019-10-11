@@ -33,7 +33,7 @@ def upath(temp_new_dir):
 
 class TestPath:
     creatable = [False, False, False, False, False, True, True]
-    paths = ["em:\\x", None, 1, 0, "", USERPATH, os.path.splitdrive(USERPATH)[0]]
+    paths = ["em:\\x", None, 1, 0, "", USERPATH]
 
     @pytest.fixture
     def object(self, path):
