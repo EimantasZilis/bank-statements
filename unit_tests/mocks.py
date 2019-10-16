@@ -5,7 +5,7 @@ import pathlib
 from unittest.mock import Mock, patch
 
 from system.file_management import Jdict, os
-from unit_tests.sample import User
+from unit_tests.sample import Path, User
 
 
 class MockUser:
@@ -17,10 +17,14 @@ class MockUser:
         def setup_u_paths(cwd):
             """ Setup user's COMMON path by creating
             u_paths.json in a temporary directory"""
+
             fp = os.path.join(cwd, "system", "configuration", "u_paths.json")
             os.makedirs(os.path.dirname(fp), exist_ok=True)
+            user_dir = os.path.join(cwd, "user_data")
+            os.makedirs(user_dir)
+
             with open(fp, "w+") as file:
-                u_paths = {"COMMON": str(cwd)}
+                u_paths = {"COMMON": user_dir}
                 json.dump(u_paths, file, indent=4, sort_keys=True)
         
         setup_u_paths(self.common_path)
