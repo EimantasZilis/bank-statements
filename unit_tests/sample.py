@@ -2,7 +2,6 @@ import os
 import pathlib
 
 class User:
-    HOME_PATH = str(pathlib.Path.home())
     CATEGORIES = ["Services", "Groceries", "Transport"]
 
 
@@ -16,16 +15,8 @@ class Path:
         return ["", "sub1", os.path.join("sub1", "sub2")]
 
     @staticmethod
-    def creatable_paths():
-        return {
-            User.home_path(): True,
-            os.path.join(User.home_path(), "subfolder"): True,
-            os.path.join("em", "x"): False, 
-            None: False, 
-            1: False,
-            0: False, 
-            "": False
-        }
+    def invalid_paths():
+        return [os.path.join("em", "x"), None, 1, 0, ""]
 
 
 class File(Path):
