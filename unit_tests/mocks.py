@@ -37,3 +37,6 @@ class MockPath(MockUser):
     @staticmethod
     def user_home():
         return str(pathlib.Path.home())
+
+    def common(self):
+        return self.common_path
