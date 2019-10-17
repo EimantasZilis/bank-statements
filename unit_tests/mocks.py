@@ -10,24 +10,26 @@ from unit_tests.sample import Path, User
 
 class MockUser:
     def __init__(self, tmpdir):
-        self.common_path = tmpdir
+        self._tmpdir = tmpdir
+        self._common_path = None
         self._init_user()
     
     def _init_user(self):
-        def setup_u_paths(cwd):
-            """ Setup user's COMMON path by creating
-            u_paths.json in a temporary directory"""
+        def setup_paths(cwd):
+            """ Setup user's paths in a temporary directory.
+            Creates relevant directories and writes COMMON
+            path to u_paths.json"""
 
             fp = os.path.join(cwd, "system", "configuration", "u_paths.json")
             os.makedirs(os.path.dirname(fp), exist_ok=True)
-            user_dir = os.path.join(cwd, "user_data")
-            os.makedirs(user_dir)
+            self._common_path = os.path.join(cwd, "user_data")
+            os.makedirs(self._common_path)
 
             with open(fp, "w+") as file:
-                u_paths = {"COMMON": user_dir}
+                u_paths = {"COMMON": self._common_path}
                 json.dump(u_paths, file, indent=4, sort_keys=True)
         
-        setup_u_paths(self.common_path)
+        setup_paths(self._tmpdir)
 
 
 class MockPath(MockUser):
@@ -39,4 +41,4 @@ class MockPath(MockUser):
         return str(pathlib.Path.home())
 
     def common(self):
-        return self.common_path
+        return self._common_path
