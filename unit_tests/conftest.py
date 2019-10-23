@@ -2,8 +2,11 @@ import pytest
 
 from unittest.mock import patch, Mock
 
-from unit_tests.mocks import MockPath, MockUser
-
+from unit_tests.mocks import (
+    MockFile,
+    MockPath,
+    MockUser
+)
 
 @pytest.fixture
 def mock_user(monkeypatch, tmpdir):
@@ -14,3 +17,8 @@ def mock_user(monkeypatch, tmpdir):
 def mock_path(monkeypatch, tmpdir):
     monkeypatch.chdir(tmpdir)
     yield MockPath(tmpdir)
+
+@pytest.fixture
+def mock_file(monkeypatch, tmpdir):
+    monkeypatch.chdir(tmpdir)
+    yield MockFile(tmpdir)

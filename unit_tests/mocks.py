@@ -4,9 +4,6 @@ import pathlib
 
 from unittest.mock import Mock, patch
 
-from system.file_management import Jdict, os
-from unit_tests.sample import Path, User
-
 
 class MockUser:
     def __init__(self, tmpdir):
@@ -33,12 +30,19 @@ class MockUser:
 
 
 class MockPath(MockUser):
+
     def __init__(self, tmpdir):
         super().__init__(tmpdir)
 
-    @staticmethod
-    def user_home():
-        return str(pathlib.Path.home())
-
     def common(self):
         return self._common_path
+
+    def base_path(self, system_file):
+        system_path = os.path.join(os.getcwd(), "system", "configuration")
+        mapping = {True: system_path, False: self.common()}
+        return mapping[system_file]
+
+class MockFile(MockPath):
+
+    def __init__(self, tmpdir):
+        super().__init__(tmpdir)
