@@ -3,6 +3,8 @@ import pathlib
 import pytest
 import datetime
 
+from unittest.mock import Mock, patch
+
 from system.file_management import Path, File, Jdict
 from unit_tests.sample import SampleFile, SamplePath
 
@@ -81,3 +83,33 @@ class TestFile:
     def test_fx_get_type_name(mock_file, type_name, type_code):
         file_object = File(type=type_code)
         assert file_object.get_type_name() == type_name
+
+    @staticmethod
+    @patch("system.file_management.Path")
+    @pytest.mark.parametrize("filename", SampleFile.FILENAMES + [None])
+    @pytest.mark.parametrize("type_code,type_name", SampleFile.type_dict())
+    def test_fx_init_file(path_mock, monkeypatch, mock_file,
+                          filename, type_code, type_name):
+
+        parse_inputs_mock = Mock()
+        parse_inputs = "system.file_management.File.parse_inputs"
+        monkeypatch.setattr(parse_inputs, parse_inputs_mock)
+
+        fp = os.path.join(mock_file.common(), type_name)
+        file_pointer_mock = Mock(return_value=fp)
+        file_pointer = "system.file_management.File.file_pointer"
+        monkeypatch.setattr(file_pointer, file_pointer_mock)
+
+        file_object = File(filename, type_code)
+        path_object = path_mock.return_value
+
+        if filename is None:
+            parse_inputs_mock.assert_not_called()
+            file_pointer_mock.assert_not_called()
+            path_mock.assert_not_called()
+            path_object.init_dirs.assert_not_called()
+        else:
+            parse_inputs_mock.assert_called_once_with(filename, type_code)
+            file_pointer_mock.assert_called_once_with(with_file=False)
+            path_mock.assert_called_once_with(fp)
+            path_object.init_dirs.assert_called_once()
