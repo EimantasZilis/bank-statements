@@ -1,7 +1,5 @@
 import pytest
 
-from unittest.mock import patch, Mock
-
 from unit_tests.mocks import (
     MockFile,
     MockPath,
