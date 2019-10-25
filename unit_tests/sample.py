@@ -39,11 +39,11 @@ class SampleFile(SamplePath):
     
     @classmethod
     def type_codes(cls):
-        return [code for code in cls.type_mappings().keys()]
+        return [code for code in cls.TYPE_MAPPINGS.keys()]
 
     @classmethod
     def type_names(cls):
-        return [name for name in cls.type_mappings().values()]
+        return [name for name in cls.TYPE_MAPPINGS.values()]
 
     @classmethod
     def type_dict(cls):

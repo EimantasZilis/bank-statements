@@ -113,3 +113,21 @@ class TestFile:
             file_pointer_mock.assert_called_once_with(with_file=False)
             path_mock.assert_called_once_with(fp)
             path_object.init_dirs.assert_called_once()
+
+    @staticmethod
+    @pytest.mark.parametrize("filename", SampleFile.FILENAMES)
+    @pytest.mark.parametrize("type_code", SampleFile.type_codes())
+    @pytest.mark.parametrize("system_file", [True, False])
+    def test_class_init(monkeypatch, mock_file, filename, type_code, system_file):
+        init_file_mock = Mock()
+        init_file = "system.file_management.File.init_file"
+        monkeypatch.setattr(init_file, init_file_mock)
+
+        file_object = File(filename, type_code, system_file)
+        init_file_mock.assert_called_once_with()
+
+        assert file_object.expected_extension == None
+        assert file_object.system_file == system_file
+        assert file_object.filename == filename
+        assert file_object.subfolders == ''
+        assert file_object.type == type_code
