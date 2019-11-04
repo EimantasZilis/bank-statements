@@ -59,19 +59,38 @@ class TestFile:
     @pytest.mark.parametrize("type_id,type_name", SampleFile.type_dict())
     def test_fx_file_pointer(mock_file, with_file, system_file,
                              filename, type_id, type_name, subfolder):
-        base_path = mock_file.base_path(system_file)
-        filepath = os.path.join(subfolder, filename)
+        if filename is None:
+            # These values are not set if filename is None
+            filepath = None
+            subfolder = ""
+            type_name = ""
+            type_id = ""
+        else:
+            filepath = os.path.join(subfolder, filename)
+
         file_object = File(filepath, type_id, system_file)
-        expected = os.path.join(base_path, type_name, subfolder)
-        expected = os.path.join(expected, filename) if with_file else expected
-        assert file_object.file_pointer(with_file=with_file) == expected
+
+        if with_file and (filename is None or not filename):
+            with pytest.raises(ValueError):
+                file_object.file_pointer(with_file=with_file)
+        else:
+            base_path = mock_file.base_path(system_file)
+            expected = os.path.join(base_path, type_name, subfolder)
+            expected = os.path.join(expected, filename) if with_file else expected
+            assert file_object.file_pointer(with_file=with_file) == expected
 
     @staticmethod
     @pytest.mark.parametrize("filename", SampleFile.FILENAMES)
     @pytest.mark.parametrize("subdir", SampleFile.SUBFOLDERS)
     @pytest.mark.parametrize("type_code,type_name", SampleFile.type_dict())
     def test_fx_parse_inputs(mock_file, filename, subdir, type_code, type_name):
-        filepath = os.path.join(subdir, filename)
+        filepath = None if filename is None else os.path.join(subdir, filename)
+        if filename is None:
+            # These values are not set if filename is None
+            type_name = ""
+            type_code = ""
+            subdir = ""
+
         file_object = File(filepath, type_code)
         file_check_ok = file_object.filename == filename
         subfolder_check_ok = file_object.subfolders == subdir
@@ -131,3 +150,44 @@ class TestFile:
         assert file_object.filename == filename
         assert file_object.subfolders == ''
         assert file_object.type == type_code
+
+    @staticmethod
+    @patch("os.remove")
+    @pytest.mark.parametrize("exception", [None, FileNotFoundError])
+    def test_fx_delete_file(os_remove, monkeypatch, mock_file, exception):
+        fp = "mock path"
+        file_pointer_mock = Mock(return_value=fp)
+        file_pointer = "system.file_management.File.file_pointer"
+        monkeypatch.setattr(file_pointer, file_pointer_mock)
+
+        os_remove.side_effect = exception
+        file_object = File().delete_file()
+        os_remove.assert_called_once_with(fp)
+
+    @staticmethod
+    @pytest.mark.parametrize("filename", [None, "hello.txt"])
+    @pytest.mark.parametrize("subfolders", SampleFile.SUBFOLDERS)
+    @pytest.mark.parametrize("type_code, type_name", SampleFile.type_dict())
+    def test_fx_rename(mock_file, filename, subfolders, type_code, type_name):
+        orig_subfolders = "subdir"
+        orig_filename = "orig.txt"
+        orig_type_name = ""
+        orig_type = ""
+
+        if filename is None:
+            filename = orig_filename
+            subfolders = orig_subfolders
+
+        if not type_code:
+            type_name = orig_type_name
+
+        file_object = File(orig_filename, orig_type)
+        fp = os.path.join(subfolders, filename)
+        file_object.rename(fp, type_code)
+
+        assert file_object.type == type_name
+        assert file_object.filename == filename
+        assert file_object.subfolders == subfolders
+
+
+

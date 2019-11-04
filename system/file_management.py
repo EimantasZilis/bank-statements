@@ -67,10 +67,13 @@ class File:
     def file_pointer(self, with_file=True):
         """ Return full file pointer to the file """
         base = self.base_path()
-        fp =  os.path.join(base, self.type, self.subfolders)
-        if with_file:
-            fp = os.path.join(fp, self.filename)
-        return fp
+        fp = os.path.join(base, self.type, self.subfolders)
+        if with_file and (self.filename is None or not self.filename):
+            raise ValueError("Filename not specified")
+        elif with_file:
+            return os.path.join(fp, self.filename)
+        else:
+            return fp
 
     def delete_file(self):
         """ Delete file """
@@ -80,11 +83,11 @@ class File:
         except FileNotFoundError:
             pass
 
-    def rename(self, new_name=None, new_type=None):
+    def rename(self, new_name=None, new_type=""):
         """ Change file name and type"""
         if new_name is not None:
             self.subfolders, self.filename = os.path.split(new_name)
-        if new_type is not None:
+        if new_type:
             self.type = File.types.get(new_type, "")
 
     def file_exists(self, fp=None):

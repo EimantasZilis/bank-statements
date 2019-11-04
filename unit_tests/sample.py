@@ -34,7 +34,7 @@ class SamplePath:
 
 class SampleFile(SamplePath):
     SUBFOLDERS = ["", "sub1", os.path.join("sub1", "sub2")]
-    FILENAMES = ["", "text.txt", "config.json", "excel.xlsx"]
+    FILENAMES = [None, "", "text.txt", "config.json", "excel.xlsx"]
     TYPE_MAPPINGS = {"": "", "D": "Data", "P": "Plot", "X": ""}
     
     @classmethod
