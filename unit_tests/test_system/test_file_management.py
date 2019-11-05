@@ -189,5 +189,36 @@ class TestFile:
         assert file_object.filename == filename
         assert file_object.subfolders == subfolders
 
+    @staticmethod
+    @pytest.mark.parametrize("exists", [True, False])
+    @pytest.mark.parametrize("file_pointer", [None, "mock path"])
+    def test_fx_file_exists(monkeypatch, exists, file_pointer):
+        if file_pointer is None:
+            with pytest.raises(TypeError):
+                File.file_exists(file_pointer)
+        else:
+            mock_isfile = Mock(return_value=exists)
+            monkeypatch.setattr("system.file_management.os.path.isfile", mock_isfile)
+            assert exists == File.file_exists(file_pointer)
+            mock_isfile.assert_called_once_with(file_pointer)
+
+    @staticmethod
+    @pytest.mark.parametrize("exists", [True, False])
+    @pytest.mark.parametrize("file_pointer", [None, "subdir/file.txt"])
+    def test_fx_overwrite_check(monkeypatch, exists, file_pointer):
+        if file_pointer is None:
+            with pytest.raises(TypeError):
+                File.overwrite_check(file_pointer)
+                return
+
+        path_str = "system.file_management"
+        mock_file_exists = Mock(return_value=exists)
+        monkeypatch.setattr(f"{path_str}.File.file_exists", mock_file_exists)
+
+        if exists:
+            with pytest.raises(IOError):
+                File.overwrite_check("mock")
+        else:
+            File.overwrite_check("mock")
 
 

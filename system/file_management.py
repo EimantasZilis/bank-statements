@@ -90,17 +90,17 @@ class File:
         if new_type:
             self.type = File.types.get(new_type, "")
 
-    def file_exists(self, fp=None):
+    @staticmethod
+    def file_exists(fp):
         """ Check if file exists. Returns True/False."""
-        if fp is None:
-            fp = self.file_pointer()
         return os.path.isfile(fp)
 
-    def overwrite_check(self, fp):
+    @classmethod
+    def overwrite_check(cls, fp):
         """ Raise IOError exception if the file already
         exists. It can be used as a check before the file
         is created."""
-        if self.file_exists(fp):
+        if cls.file_exists(fp):
             filename = os.path.basename(fp)
             error = " >> {} already exists. File was not overwritten."
             raise IOError(error.format(filename))
