@@ -106,12 +106,16 @@ class File:
             raise IOError(error.format(filename))
 
     def validate_file_extension(self):
-        """ Check if file extension is set and compare
-        against expected file extension if is isn't None.
-        It adds expected extension to filename if extension
-        isn't set. It raises an error if extension is already
-        different to expected extension. It does nothing if
-        extension is the same as expected extension. """
+        """ Validate filename and extension based on logic below:
+        1) File name or expected extension is None
+            - Do nothing
+        2) File name doesn't have an extension.
+            - Add it to filename
+        3) File name has the same extension as expected extension
+            - Do nothing
+        3) File name has extension, but different to expected extension:
+            - Raise an exception """
+
         if self.filename is None or self.expected_extension is None:
             return
 
