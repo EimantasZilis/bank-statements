@@ -67,10 +67,13 @@ class File:
     def file_pointer(self, with_file=True):
         """ Return full file pointer to the file """
         base = self.base_path()
-        fp =  os.path.join(base, self.type, self.subfolders)
-        if with_file:
-            fp = os.path.join(fp, self.filename)
-        return fp
+        fp = os.path.join(base, self.type, self.subfolders)
+        if with_file and (self.filename is None or not self.filename):
+            raise ValueError("Filename not specified")
+        elif with_file:
+            return os.path.join(fp, self.filename)
+        else:
+            return fp
 
     def delete_file(self):
         """ Delete file """
@@ -80,35 +83,39 @@ class File:
         except FileNotFoundError:
             pass
 
-    def rename(self, new_name=None, new_type=None):
+    def rename(self, new_name=None, new_type=""):
         """ Change file name and type"""
         if new_name is not None:
             self.subfolders, self.filename = os.path.split(new_name)
-        if new_type is not None:
+        if new_type:
             self.type = File.types.get(new_type, "")
 
-    def file_exists(self, fp=None):
+    @staticmethod
+    def file_exists(fp):
         """ Check if file exists. Returns True/False."""
-        if fp is None:
-            fp = self.file_pointer()
         return os.path.isfile(fp)
 
-    def overwrite_check(self, fp):
+    @classmethod
+    def overwrite_check(cls, fp):
         """ Raise IOError exception if the file already
         exists. It can be used as a check before the file
         is created."""
-        if self.file_exists(fp):
+        if cls.file_exists(fp):
             filename = os.path.basename(fp)
             error = " >> {} already exists. File was not overwritten."
             raise IOError(error.format(filename))
 
     def validate_file_extension(self):
-        """ Check if file extension is set and compare
-        against expected file extension if is isn't None.
-        It adds expected extension to filename if extension
-        isn't set. It raises an error if extension is already
-        different to expected extension. It does nothing if
-        extension is the same as expected extension. """
+        """ Validate filename and extension based on logic below:
+        1) File name or expected extension is None
+            - Do nothing
+        2) File name doesn't have an extension.
+            - Add it to filename
+        3) File name has the same extension as expected extension
+            - Do nothing
+        3) File name has extension, but different to expected extension:
+            - Raise an exception """
+
         if self.filename is None or self.expected_extension is None:
             return
 
