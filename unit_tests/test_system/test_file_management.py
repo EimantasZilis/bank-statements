@@ -221,4 +221,45 @@ class TestFile:
         else:
             File.overwrite_check("mock")
 
+    @staticmethod
+    @pytest.mark.parametrize("file", SampleFile.FILENAMES)
+    @pytest.mark.parametrize("extension", SampleFile.EXTENSIONS)
+    def test_fx_validate_file_extension(monkeypatch, file, extension):
+        def run_test(filename, extension):
+            file_extension = None if file is None else os.path.splitext(filename)[1]
+            file_object = File(filename)
+            file_object.expected_extension = extension
+
+            do_nothing = (filename is None) or (extension is None)
+            same_extension = extension == file_extension
+            add_extension = file_extension is ''
+            raise_error = (file_extension != extension)
+            print(f'\nfilename: {filename}\n >> file_extension: {file_extension}')
+            print(f' >> expected extension: {extension}')
+            if do_nothing or same_extension:
+                print(f' >> do nothing or same')
+                file_object.validate_file_extension()
+                assert file_object.filename == filename
+
+            elif add_extension:
+                print(f' >> add')
+                file_object.validate_file_extension()
+                assert file_object.filename == f"{filename}{extension}"
+
+            elif raise_error:
+                print(f' >> error')
+                with pytest.raises(ValueError):
+                    file_object.validate_file_extension()
+            else:
+                raise ValueError(
+                        f"Unaccounted case in unit test. This test needs a fix \
+                        \n >> filename: {filename}\n >> extension: {extension}"
+                )
+
+        # Test 1: use filename with extension
+        run_test(file, extension)
+
+        # # Test 2: use filename without extension
+        filename = None if file is None else os.path.splitext(file)[0]
+        run_test(filename, extension)
 
